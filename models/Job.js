@@ -1,13 +1,33 @@
 import mongoose from 'mongoose';
 
 const jobSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: String,
-  employer: { type: mongoose.Schema.Types.ObjectId, ref: 'Employer', required: true },
+  jobTitle: { type: String, required: true },
+  companyName: { type: String, required: true },
+  companyDescription: String,
+  companyGoals: String,
   location: String,
-  salary: Number,
+  jobDescription: String,
+  jobType: { type: String, enum: ['Full-time', 'Part-time', 'Contract', 'Internship'], required: true },
+  workArrangement: { type: String, enum: ['Remote', 'On-site', 'Hybrid'], required: true },
+  jobStartDate: Date,
+  employer: { type: mongoose.Schema.Types.ObjectId, ref: 'Employer', required: true },
+  salary: { type: mongoose.Schema.Types.Mixed, required: true },
+  benefits: [String],
+  keyResponsibilities: [String],
   requirements: [String],
-  postedAt: { type: Date, default: Date.now }
+  otherRequirements: String,
+  skills: [String],
+  experienceLevel: {
+    level: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Director', 'Executive'], required: false },
+    years: { type: Number, min: 0 }
+  },
+  educationRequirements: { type: String, enum: ['High School', 'Associate', 'Bachelor', 'Master', 'Doctorate', 'Not Applicable'], required: true },
+  industry: String,
+  tags: [String],
+  seniorityLevel: { type: String, enum: ['Internship', 'Entry', 'Associate', 'Mid-Senior', 'Senior', 'Director', 'Executive'] },
+  totalApplicants: { type: Number, default: 0 },
+  postedAt: { type: Date, default: Date.now },
+  applicationDeadline: Date
 });
 
 const Job = mongoose.model('Job', jobSchema);
