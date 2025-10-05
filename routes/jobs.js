@@ -6,12 +6,31 @@ const router = express.Router();
 // Get all jobs
 router.get('/', async (req, res) => {
   try {
-    const jobs = await Job.find().populate('employer', 'name companyName email');
-    res.json(jobs);
+    // Get page and limit from query params, default values if not provided
+    const page = parseInt(req.query.page) || 1; // default page = 1
+    const limit = parseInt(req.query.limit) || 10; // default 10 jobs per page
+    const skip = (page - 1) * limit; // calculate how many documents to skip
+
+    // Fetch jobs with pagination
+    const jobs = await Job.find()
+      .populate('employer', 'name companyName email')
+      .skip(skip)
+      .limit(limit);
+
+    // Optional: total count for frontend to calculate total pages
+    const totalJobs = await Job.countDocuments();
+
+    res.json({
+      page,
+      totalPages: Math.ceil(totalJobs / limit),
+      totalJobs,
+      jobs
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 // Get single job
 router.get('/:id', async (req, res) => {
