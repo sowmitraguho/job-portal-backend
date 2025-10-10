@@ -1,10 +1,4 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import Job from "./models/Job.js";
-
-dotenv.config();
-
-const jobs = [
+export const fakeJobs = [
     {
         "experienceLevel": {
             "level": "Senior",
@@ -468,20 +462,4 @@ const jobs = [
         "postedAt": "2025-10-05T18:26:00.478Z"
     }
 
-];
-
-async function seedDB() {
-    try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log("MongoDB connected");
-
-        await Job.insertMany(jobs);
-        console.log("Jobs inserted successfully");
-
-        mongoose.connection.close();
-    } catch (err) {
-        console.error("Error seeding database:", err);
-    }
-}
-
-seedDB();
+]
