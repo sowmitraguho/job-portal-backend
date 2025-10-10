@@ -70,4 +70,60 @@ router.get('/:id/applicants', async (req, res) => {
   }
 });
 
+// Get all applicants of employer's jobs with filters
+router.get('/:id/applicants', async (req, res) => {
+  const { id } = req.params; // employer ID
+  const { jobId, experienceLevel, fromDate, toDate, skills } = req.query;
+
+  try {
+    // Step 1: Find all jobs of the employer
+    let jobFilter = { employer: id };
+    if (jobId) jobFilter._id = jobId;
+
+    const jobs = await Job.find(jobFilter)
+      .populate({
+        path: 'applicants',
+        select: 'name email skills profileImage resume experience education appliedJobs',
+      })
+      .exec();
+
+    // Step 2: Filter applicants inside jobs
+    const filteredJobs = jobs.map(job => {
+      let applicants = job.applicants;
+
+      // Filter by experience level
+      if (experienceLevel) {
+        applicants = applicants.filter(applicant =>
+          applicant.experience.some(exp => exp.level === experienceLevel)
+        );
+      }
+
+      // Filter by skills
+      if (skills) {
+        const skillsArray = skills.split(',').map(s => s.trim().toLowerCase());
+        applicants = applicants.filter(applicant =>
+          skillsArray.every(skill => applicant.skills.map(sk => sk.toLowerCase()).includes(skill))
+        );
+      }
+
+      // Filter by application date
+      if (fromDate || toDate) {
+        const from = fromDate ? new Date(fromDate) : new Date('1970-01-01');
+        const to = toDate ? new Date(toDate) : new Date();
+        applicants = applicants.filter(applicant =>
+          applicant.appliedJobs.includes(job._id) && // only those who applied to this job
+          applicant.updatedAt >= from && applicant.updatedAt <= to
+        );
+      }
+
+      return { ...job.toObject(), applicants };
+    });
+
+    res.json(filteredJobs);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
 export default router;
