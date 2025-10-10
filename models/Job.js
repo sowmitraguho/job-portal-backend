@@ -10,7 +10,7 @@ const jobSchema = new mongoose.Schema({
   jobType: { type: String, enum: ['Full-time', 'Part-time', 'Contract', 'Internship'], required: true },
   workArrangement: { type: String, enum: ['Remote', 'On-site', 'Hybrid'], required: true },
   jobStartDate: Date,
-  employer: { type: mongoose.Schema.Types.ObjectId, ref: 'Employer', required: true },
+  employer: { type: mongoose.Schema.Types.ObjectId, ref: 'Employer' },
   salary: { type: mongoose.Schema.Types.Mixed, required: true },
   benefits: [String],
   keyResponsibilities: [String],
