@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import jobRoutes from './routes/jobs.js';
-import candidateRoutes from './routes/candidates.js';
 import employerRoutes from './routes/employers.js';
 import candidateRoutes from './routes/candidates.js';
 import subscribeRoutes from './routes/subscribe.js';

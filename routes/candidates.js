@@ -24,9 +24,9 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Create employee
+// Create candidate
 router.post('/', async (req, res) => {
-    const candidate = new Employee(req.body);
+    const candidate = new Candidate(req.body);
     try {
         const newCandidate = await candidate.save();
         res.status(201).json(newCandidate);
