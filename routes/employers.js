@@ -1,6 +1,8 @@
 import express from 'express';
 import Employer from '../models/Employer.js';
 import Job from '../models/Job.js';
+import Employee from '../models/Employee.js';
+
 
 const router = express.Router();
 
@@ -56,39 +58,22 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Get all applicants of employer's jobs
 router.get('/:id/applicants', async (req, res) => {
-  const { id } = req.params; // employer ID
-  try {
-    const jobs = await Job.find({ employer: id })
-      .populate('applicants', 'name email skills profileImage resume experience education') // populate applicant details
-      .exec();
-
-    res.json(jobs);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Get all applicants of employer's jobs with filters
-router.get('/:id/applicants', async (req, res) => {
-  const { id } = req.params; // employer ID
-  const { jobId, experienceLevel, fromDate, toDate, skills } = req.query;
+  const { id } = req.params;
+  const { jobId, experienceLevel, fromDate, toDate, skills, page = 1, limit = 10 } = req.query;
 
   try {
-    // Step 1: Find all jobs of the employer
+    // Step 1: Get employer's jobs
     let jobFilter = { employer: id };
     if (jobId) jobFilter._id = jobId;
 
-    const jobs = await Job.find(jobFilter)
-      .populate({
-        path: 'applicants',
-        select: 'name email skills profileImage resume experience education appliedJobs',
-      })
-      .exec();
+    const jobs = await Job.find(jobFilter).populate({
+      path: 'applicants',
+      select: 'name email skills profileImage resume experience education appliedJobs createdAt applicationStatus',
+    }).exec();
 
-    // Step 2: Filter applicants inside jobs
-    const filteredJobs = jobs.map(job => {
+    // Step 2: Filter and paginate applicants
+    const paginatedJobs = jobs.map(job => {
       let applicants = job.applicants;
 
       // Filter by experience level
@@ -106,20 +91,81 @@ router.get('/:id/applicants', async (req, res) => {
         );
       }
 
-      // Filter by application date
+      // Filter by date applied
       if (fromDate || toDate) {
         const from = fromDate ? new Date(fromDate) : new Date('1970-01-01');
         const to = toDate ? new Date(toDate) : new Date();
         applicants = applicants.filter(applicant =>
-          applicant.appliedJobs.includes(job._id) && // only those who applied to this job
-          applicant.updatedAt >= from && applicant.updatedAt <= to
+          applicant.appliedJobs.includes(job._id) &&
+          applicant.createdAt >= from && applicant.createdAt <= to
         );
       }
 
-      return { ...job.toObject(), applicants };
+      // Pagination
+      const totalApplicants = applicants.length;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + parseInt(limit);
+      const paginatedApplicants = applicants.slice(startIndex, endIndex);
+
+      return {
+        ...job.toObject(),
+        applicants: paginatedApplicants,
+        totalApplicants,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalApplicants / limit),
+      };
     });
 
-    res.json(filteredJobs);
+    res.json(paginatedJobs);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+router.patch('/:id/applicants/bulk', async (req, res) => {
+  const { id } = req.params; // employer ID
+  const { jobId, applicantIds, action } = req.body;
+
+  if (!jobId || !Array.isArray(applicantIds) || !action) {
+    return res.status(400).json({ message: 'jobId, applicantIds, and action are required' });
+  }
+
+  try {
+    // Validate job ownership
+    const job = await Job.findOne({ _id: jobId, employer: id });
+    if (!job) return res.status(404).json({ message: 'Job not found or not owned by this employer' });
+
+    // Define action mapping
+    const statusMap = {
+      shortlist: 'Shortlisted',
+      reject: 'Rejected',
+      nextRound: 'Interview',
+    };
+
+    if (action === 'delete') {
+      // Remove applicants from job and employee appliedJobs
+      job.applicants = job.applicants.filter(appId => !applicantIds.includes(appId.toString()));
+      await job.save();
+
+      await Employee.updateMany(
+        { _id: { $in: applicantIds } },
+        { $pull: { appliedJobs: jobId, [`applicationStatus.${jobId}`]: '' } } // remove job from appliedJobs and status
+      );
+
+      return res.json({ message: 'Applicants removed successfully' });
+    }
+
+    // Update status for selected applicants
+    const updateStatus = statusMap[action];
+    if (!updateStatus) return res.status(400).json({ message: 'Invalid action' });
+
+    await Employee.updateMany(
+      { _id: { $in: applicantIds } },
+      { $set: { [`applicationStatus.${jobId}`]: updateStatus } }
+    );
+
+    res.json({ message: `Applicants ${updateStatus.toLowerCase()} successfully` });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
