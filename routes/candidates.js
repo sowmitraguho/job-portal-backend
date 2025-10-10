@@ -1,12 +1,12 @@
 import express from 'express';
-import Employee from '../models/candidate.js';
+import Candidate from '../models/candidate.js';
 
 const router = express.Router();
 
-// Get all employees
+// Get all candidates   
 router.get('/', async (req, res) => {
     try {
-        const candidates = await Employee.find().populate('appliedJobs', 'title');
+        const candidates = await Candidate.find().populate('appliedJobs', 'title');
         res.json(candidates);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 // Get single employee
 router.get('/:id', async (req, res) => {
     try {
-        const candidate = await Employee.findById(req.params.id).populate('appliedJobs', 'title');
+        const candidate = await Candidate.findById(req.params.id).populate('appliedJobs', 'title');
         if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
         res.json(candidate);
     } catch (err) {
@@ -48,7 +48,7 @@ router.put('/:id', async (req, res) => {
 // Delete employee
 router.delete('/:id', async (req, res) => {
     try {
-        await Employee.findByIdAndDelete(req.params.id);
+        await Candidate.findByIdAndDelete(req.params.id);
         res.json({ message: 'Candidate deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
