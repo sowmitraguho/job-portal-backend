@@ -1,13 +1,13 @@
 import express from 'express';
-import Employee from '../models/Employee.js';
+import Employee from '../models/candidate.js';
 
 const router = express.Router();
 
 // Get all employees
 router.get('/', async (req, res) => {
     try {
-        const employees = await Employee.find().populate('appliedJobs', 'title');
-        res.json(employees);
+        const candidates = await Employee.find().populate('appliedJobs', 'title');
+        res.json(candidates);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -16,9 +16,9 @@ router.get('/', async (req, res) => {
 // Get single employee
 router.get('/:id', async (req, res) => {
     try {
-        const employee = await Employee.findById(req.params.id).populate('appliedJobs', 'title');
-        if (!employee) return res.status(404).json({ message: 'Employee not found' });
-        res.json(employee);
+        const candidate = await Employee.findById(req.params.id).populate('appliedJobs', 'title');
+        if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
+        res.json(candidate);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -26,10 +26,10 @@ router.get('/:id', async (req, res) => {
 
 // Create employee
 router.post('/', async (req, res) => {
-    const employee = new Employee(req.body);
+    const candidate = new Employee(req.body);
     try {
-        const newEmployee = await employee.save();
-        res.status(201).json(newEmployee);
+        const newCandidate = await candidate.save();
+        res.status(201).json(newCandidate);
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
@@ -38,8 +38,8 @@ router.post('/', async (req, res) => {
 // Update employee
 router.put('/:id', async (req, res) => {
     try {
-        const updatedEmployee = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedEmployee);
+        const updatedCandidate = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedCandidate);
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
@@ -49,7 +49,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         await Employee.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Employee deleted' });
+        res.json({ message: 'Candidate deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

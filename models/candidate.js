@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const employeeSchema = new mongoose.Schema(
+const candidateSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
@@ -43,9 +43,12 @@ const employeeSchema = new mongoose.Schema(
     },
 
     appliedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
+    savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
+
+    createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
 
-const Employee = mongoose.model("Employee", employeeSchema);
-export default Employee;
+const Candidate = mongoose.model("Candidate", candidateSchema);
+export default Candidate;

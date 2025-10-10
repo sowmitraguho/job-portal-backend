@@ -9,6 +9,7 @@ const communityPostSchema = new mongoose.Schema(
     totalLikes: { type: Number, default: 0 },
     totalHaha: { type: Number, default: 0 },
     totalLove: { type: Number, default: 0 },
+    postDate: { type: Date, default: Date.now },
     reactions: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -17,6 +18,7 @@ const communityPostSchema = new mongoose.Schema(
     ],
   },
   { timestamps: true }
+  
 );
 
 export default mongoose.model('CommunityPost', communityPostSchema);
