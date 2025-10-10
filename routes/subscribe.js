@@ -1,5 +1,5 @@
 import express from 'express';
-import Subscription from '../models/Subscription.js';
+import Subscription from '../models/Subscribers.js';
 
 const router = express.Router();
 
@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
 
 router.get('/', async (req, res) => {
     try {
-        const subscribers = await Subscription.find().sort({ subscribedAt: -1 });   
+        const subscribers = await Subscription.find().sort({ subscribedAt: -1 });
         res.json(subscribers);
     } catch (err) {
         res.status(500).json({ message: err.message });
