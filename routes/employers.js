@@ -137,7 +137,7 @@ router.get('/:id/applicants', async (req, res) => {
 
   try {
     // Step 1: Filter jobs for this employer
-    let jobFilter: any = { employer: id };
+    let jobFilter = { employer: id };
     if (jobId) jobFilter._id = jobId;
 
     const jobs = await Job.find(jobFilter)
@@ -153,7 +153,7 @@ router.get('/:id/applicants', async (req, res) => {
 
       // If selectedIds is provided, filter only these applicants
       if (selectedIds) {
-        const idsArray = (selectedIds as string).split(',');
+        const idsArray = (selectedIds).split(',');
         applicants = applicants.filter((applicant) =>
           idsArray.includes(applicant._id.toString())
         );
@@ -168,18 +168,18 @@ router.get('/:id/applicants', async (req, res) => {
 
       // Filter by skills
       if (skills) {
-        const skillsArray = (skills as string).split(',').map((s) => s.trim().toLowerCase());
+        const skillsArray = (skills).split(',').map((s) => s.trim().toLowerCase());
         applicants = applicants.filter((applicant) =>
           skillsArray.every((skill) =>
-            applicant.skills.map((sk: string) => sk.toLowerCase()).includes(skill)
+            applicant.skills.map((sk) => sk.toLowerCase()).includes(skill)
           )
         );
       }
 
       // Filter by applied date
       if (fromDate || toDate) {
-        const from = fromDate ? new Date(fromDate as string) : new Date('1970-01-01');
-        const to = toDate ? new Date(toDate as string) : new Date();
+        const from = fromDate ? new Date(fromDate) : new Date('1970-01-01');
+        const to = toDate ? new Date(toDate) : new Date();
         applicants = applicants.filter(
           (applicant) =>
             applicant.appliedJobs.includes(job._id) &&
@@ -190,22 +190,22 @@ router.get('/:id/applicants', async (req, res) => {
 
       // Pagination
       const totalApplicants = applicants.length;
-      const startIndex = ((page as number) - 1) * (limit as number);
-      const endIndex = startIndex + parseInt(limit as string);
+      const startIndex = ((page) - 1) * (limit);
+      const endIndex = startIndex + parseInt(limit);
       const paginatedApplicants = applicants.slice(startIndex, endIndex);
 
       return {
         ...job.toObject(),
         applicants: paginatedApplicants,
         totalApplicants,
-        currentPage: parseInt(page as string),
-        totalPages: Math.ceil(totalApplicants / (limit as number)),
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalApplicants / (limit)),
       };
     });
 
     res.json(paginatedJobs);
   } catch (err) {
-    res.status(500).json({ message: (err as Error).message });
+    res.status(500).json({ message: (err).message });
   }
 });
 
