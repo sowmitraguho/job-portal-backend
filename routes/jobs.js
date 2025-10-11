@@ -70,6 +70,28 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+router.patch('/:id', async (req, res) => {
+  try {
+    const { applicantId, status } = req.body;
+
+    // Find job by ID and update status of matching applicant
+    const updatedJob = await Job.findOneAndUpdate(
+      { _id: req.params.id, 'applicants._id': applicantId },
+      { $set: { 'applicants.$.status': status } },
+      { new: true }
+    );
+
+    if (!updatedJob) {
+      return res.status(404).json({ message: 'Applicant not found' });
+    }
+
+    res.json(updatedJob);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+
 
 // Delete job
 router.delete('/:id', async (req, res) => {
