@@ -24,6 +24,35 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+
+//get by applied job info
+router.get('/by-job/:jobId', async (req, res) => {
+    const { jobId } = req.params;
+    const { status } = req.query; // optional filter
+
+    try {
+        // Build the filter dynamically
+        const filter = { 'appliedJobs.job': jobId };
+
+        if (status) {
+            filter['appliedJobs.status'] = status; // only candidates with this status
+        }
+
+        const candidates = await Candidate.find(filter)
+            .populate('appliedJobs.job', 'jobTitle companyName')
+            .select('name email phone appliedJobs');
+
+        if (!candidates.length) {
+            return res.status(404).json({ message: 'No candidates found for this job' });
+        }
+
+        res.json(candidates);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
 // Create candidate
 router.post('/', async (req, res) => {
     const candidate = new Candidate(req.body);

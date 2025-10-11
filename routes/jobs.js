@@ -58,12 +58,18 @@ router.post('/', async (req, res) => {
 // Update job
 router.put('/:id', async (req, res) => {
   try {
-    const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { applicant, status, primaryEnquiries } = req.body;
+    const updatedJob = await Job.findByIdAndUpdate(
+      req.params.id,
+      { $push: { applicants: { applicant, status, primaryEnquiries } } },
+      { new: true }
+    );
     res.json(updatedJob);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
+
 
 // Delete job
 router.delete('/:id', async (req, res) => {
