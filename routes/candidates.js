@@ -31,6 +31,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /candidates?ids=cand1,cand2,cand3
+router.get('/applied', async (req, res) => {
+  const { ids } = req.query; 
+  if (!ids) return res.status(400).json({ message: 'No ids provided' });
+
+  const idArray = (ids).split(',');
+  try {
+    const candidates = await Candidate.find({ _id: { $in: idArray } });
+    res.json({ candidates });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // Get single employee
 router.get('/:id', async (req, res) => {
