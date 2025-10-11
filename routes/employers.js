@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import express from 'express';
 import Employer from '../models/Employer.js';
 import Job from '../models/Job.js';
@@ -19,9 +20,16 @@ router.get('/', async (req, res) => {
 // Get single employer
 router.get('/:id', async (req, res) => {
   try {
-    const employer = await Employer.findById(req.params.id).populate('jobsPosted', 'jobTitle');
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid Employer ID format' });
+    }
+
+    const employer = await Employer.findById(id).populate('jobsPosted', 'jobTitle');
     if (!employer) return res.status(404).json({ message: 'Employer not found' });
-    res.json(employer);
+
+    return res.json(employer);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

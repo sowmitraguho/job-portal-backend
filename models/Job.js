@@ -1,5 +1,19 @@
 import mongoose from 'mongoose';
 
+const applicantSchema = new mongoose.Schema({
+  applicant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Candidate",
+    required: true,
+  },
+  status: {
+    type: String,
+    enum: ['applied', 'shortlisted', 'interviewed', 'rejected', 'hired'],
+    default: 'applied',
+  },
+  primaryEnquiries: [String],
+})
+
 const jobSchema = new mongoose.Schema({
   jobTitle: { type: String, required: true },
   companyName: { type: String, required: true },
@@ -26,7 +40,7 @@ const jobSchema = new mongoose.Schema({
   tags: [String],
   seniorityLevel: { type: String, enum: ['Internship', 'Entry', 'Associate', 'Mid-Senior', 'Senior', 'Director', 'Executive'] },
   primaryEnquiries: [String],
-  applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' }],
+  applicants: [applicantSchema],
   totalApplicants: { type: Number, default: 0 },
   postedAt: { type: Date, default: Date.now },
   applicationDeadline: Date

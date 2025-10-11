@@ -17,6 +17,11 @@ const employerSchema = new mongoose.Schema(
       required: [true, 'Employer name is required'],
       trim: true,
     },
+    authProvider: {
+      type: String,
+      enum: ['google', 'email', 'github'],
+      default: 'email'
+    },
     email: {
       type: String,
       required: [true, 'Email is required'],

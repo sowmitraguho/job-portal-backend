@@ -1,10 +1,29 @@
 import mongoose from "mongoose";
 
+const appliedJobSchema = new mongoose.Schema({
+  job: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Job",
+    required: true,
+  },
+  status: {
+    type: String,
+    enum: ['applied', 'shortlisted', 'interviewed', 'rejected', 'hired'],
+    default: 'applied',
+  },
+  primaryEnquiries: [String],
+}, { _id: false }); // optional to skip auto _id for subdocs
+
 const candidateSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
     name: { type: String, required: true, trim: true },
+    authProvider: {
+      type: String,
+      enum: ['google', 'email', 'github'],
+      default: 'email'
+    },
     email: { type: String, required: true, unique: true, lowercase: true },
     phone: { type: String },
     profileImage: { type: String },
@@ -44,7 +63,7 @@ const candidateSchema = new mongoose.Schema(
       website: { type: String },
     },
 
-    appliedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
+    appliedJobs: [appliedJobSchema],
     savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
 
     createdAt: { type: Date, default: Date.now },
