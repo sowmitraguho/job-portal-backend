@@ -1,4 +1,4 @@
-export const fakeEmployees = [
+export const fakeCandidates = [
   {
     name: "Sadia Rahman",
     email: "sadia.rahman@gmail.com",

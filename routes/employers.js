@@ -1,7 +1,7 @@
 import express from 'express';
 import Employer from '../models/Employer.js';
 import Job from '../models/Job.js';
-import Employee from '../models/candidate.js';
+import Candidate from '../models/candidate.js';
 
 
 const router = express.Router();
@@ -58,67 +58,154 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// router.get('/:id/applicants', async (req, res) => {
+//   const { id } = req.params;
+//   const { jobId, experienceLevel, fromDate, toDate, skills, page = 1, limit = 10 } = req.query;
+
+//   try {
+//     // Step 1: Get employer's jobs
+//     let jobFilter = { employer: id };
+//     if (jobId) jobFilter._id = jobId;
+
+//     const jobs = await Job.find(jobFilter).populate({
+//       path: 'applicants',
+//       select: 'name email skills profileImage resume experience education appliedJobs createdAt applicationStatus',
+//     }).exec();
+
+//     // Step 2: Filter and paginate applicants
+//     const paginatedJobs = jobs.map(job => {
+//       let applicants = job.applicants;
+
+//       // Filter by experience level
+//       if (experienceLevel) {
+//         applicants = applicants.filter(applicant =>
+//           applicant.experience.some(exp => exp.level === experienceLevel)
+//         );
+//       }
+
+//       // Filter by skills
+//       if (skills) {
+//         const skillsArray = skills.split(',').map(s => s.trim().toLowerCase());
+//         applicants = applicants.filter(applicant =>
+//           skillsArray.every(skill => applicant.skills.map(sk => sk.toLowerCase()).includes(skill))
+//         );
+//       }
+
+//       // Filter by date applied
+//       if (fromDate || toDate) {
+//         const from = fromDate ? new Date(fromDate) : new Date('1970-01-01');
+//         const to = toDate ? new Date(toDate) : new Date();
+//         applicants = applicants.filter(applicant =>
+//           applicant.appliedJobs.includes(job._id) &&
+//           applicant.createdAt >= from && applicant.createdAt <= to
+//         );
+//       }
+
+//       // Pagination
+//       const totalApplicants = applicants.length;
+//       const startIndex = (page - 1) * limit;
+//       const endIndex = startIndex + parseInt(limit);
+//       const paginatedApplicants = applicants.slice(startIndex, endIndex);
+
+//       return {
+//         ...job.toObject(),
+//         applicants: paginatedApplicants,
+//         totalApplicants,
+//         currentPage: parseInt(page),
+//         totalPages: Math.ceil(totalApplicants / limit),
+//       };
+//     });
+
+//     res.json(paginatedJobs);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
 router.get('/:id/applicants', async (req, res) => {
-  const { id } = req.params;
-  const { jobId, experienceLevel, fromDate, toDate, skills, page = 1, limit = 10 } = req.query;
+  const { id } = req.params; // employer ID
+  const {
+    jobId,
+    experienceLevel,
+    fromDate,
+    toDate,
+    skills,
+    page = 1,
+    limit = 10,
+    selectedIds, // new query param for selected applicant IDs
+  } = req.query;
 
   try {
-    // Step 1: Get employer's jobs
-    let jobFilter = { employer: id };
+    // Step 1: Filter jobs for this employer
+    let jobFilter: any = { employer: id };
     if (jobId) jobFilter._id = jobId;
 
-    const jobs = await Job.find(jobFilter).populate({
-      path: 'applicants',
-      select: 'name email skills profileImage resume experience education appliedJobs createdAt applicationStatus',
-    }).exec();
+    const jobs = await Job.find(jobFilter)
+      .populate({
+        path: 'applicants',
+        select: 'name email skills profileImage resume experience education appliedJobs createdAt applicationStatus',
+      })
+      .exec();
 
     // Step 2: Filter and paginate applicants
-    const paginatedJobs = jobs.map(job => {
+    const paginatedJobs = jobs.map((job) => {
       let applicants = job.applicants;
+
+      // If selectedIds is provided, filter only these applicants
+      if (selectedIds) {
+        const idsArray = (selectedIds as string).split(',');
+        applicants = applicants.filter((applicant) =>
+          idsArray.includes(applicant._id.toString())
+        );
+      }
 
       // Filter by experience level
       if (experienceLevel) {
-        applicants = applicants.filter(applicant =>
-          applicant.experience.some(exp => exp.level === experienceLevel)
+        applicants = applicants.filter((applicant) =>
+          applicant.experience.some((exp) => exp.level === experienceLevel)
         );
       }
 
       // Filter by skills
       if (skills) {
-        const skillsArray = skills.split(',').map(s => s.trim().toLowerCase());
-        applicants = applicants.filter(applicant =>
-          skillsArray.every(skill => applicant.skills.map(sk => sk.toLowerCase()).includes(skill))
+        const skillsArray = (skills as string).split(',').map((s) => s.trim().toLowerCase());
+        applicants = applicants.filter((applicant) =>
+          skillsArray.every((skill) =>
+            applicant.skills.map((sk: string) => sk.toLowerCase()).includes(skill)
+          )
         );
       }
 
-      // Filter by date applied
+      // Filter by applied date
       if (fromDate || toDate) {
-        const from = fromDate ? new Date(fromDate) : new Date('1970-01-01');
-        const to = toDate ? new Date(toDate) : new Date();
-        applicants = applicants.filter(applicant =>
-          applicant.appliedJobs.includes(job._id) &&
-          applicant.createdAt >= from && applicant.createdAt <= to
+        const from = fromDate ? new Date(fromDate as string) : new Date('1970-01-01');
+        const to = toDate ? new Date(toDate as string) : new Date();
+        applicants = applicants.filter(
+          (applicant) =>
+            applicant.appliedJobs.includes(job._id) &&
+            applicant.createdAt >= from &&
+            applicant.createdAt <= to
         );
       }
 
       // Pagination
       const totalApplicants = applicants.length;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + parseInt(limit);
+      const startIndex = ((page as number) - 1) * (limit as number);
+      const endIndex = startIndex + parseInt(limit as string);
       const paginatedApplicants = applicants.slice(startIndex, endIndex);
 
       return {
         ...job.toObject(),
         applicants: paginatedApplicants,
         totalApplicants,
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalApplicants / limit),
+        currentPage: parseInt(page as string),
+        totalPages: Math.ceil(totalApplicants / (limit as number)),
       };
     });
 
     res.json(paginatedJobs);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: (err as Error).message });
   }
 });
 
@@ -148,7 +235,7 @@ router.patch('/:id/applicants/bulk', async (req, res) => {
       job.applicants = job.applicants.filter(appId => !applicantIds.includes(appId.toString()));
       await job.save();
 
-      await Employee.updateMany(
+      await Candidate.updateMany(
         { _id: { $in: applicantIds } },
         { $pull: { appliedJobs: jobId, [`applicationStatus.${jobId}`]: '' } } // remove job from appliedJobs and status
       );
@@ -160,7 +247,7 @@ router.patch('/:id/applicants/bulk', async (req, res) => {
     const updateStatus = statusMap[action];
     if (!updateStatus) return res.status(400).json({ message: 'Invalid action' });
 
-    await Employee.updateMany(
+    await Candidate.updateMany(
       { _id: { $in: applicantIds } },
       { $set: { [`applicationStatus.${jobId}`]: updateStatus } }
     );

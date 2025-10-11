@@ -18,13 +18,15 @@ const jobSchema = new mongoose.Schema({
   otherRequirements: String,
   skills: [String],
   experienceLevel: {
-    level: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Director', 'Executive'], required: false },
+    level: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Director', 'Executive', 'Internship'], required: false },
     years: { type: Number, min: 0 }
   },
   educationRequirements: { type: String, enum: ['High School', 'Associate', 'Bachelor', 'Master', 'Doctorate', 'Not Applicable'], required: true },
   industry: String,
   tags: [String],
   seniorityLevel: { type: String, enum: ['Internship', 'Entry', 'Associate', 'Mid-Senior', 'Senior', 'Director', 'Executive'] },
+  primaryEnquiries: [String],
+  applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' }],
   totalApplicants: { type: Number, default: 0 },
   postedAt: { type: Date, default: Date.now },
   applicationDeadline: Date
