@@ -28,7 +28,7 @@ const candidateSchema = new mongoose.Schema(
     profileImage: { type: String },
     address: { type: String },
     bio: { type: String, maxlength: 500 },
-    role: { type: String, default: "employee" },
+    role: { type: String, default: "candidate" },
     education: [
       {
         institution: { type: String, required: true },

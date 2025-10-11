@@ -24,14 +24,8 @@ const employerSchema = new mongoose.Schema(
       trim: true,
       match: [/.+\@.+\..+/, 'Please enter a valid email address'],
     },
-    password: {
-      type: String,
-      required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters long'],
-    },
     companyName: {
       type: String,
-      required: [true, 'Company name is required'],
       trim: true,
     },
     companyDescription: {
