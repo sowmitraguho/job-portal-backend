@@ -6,6 +6,7 @@ import employerRoutes from './routes/employers.js';
 import candidateRoutes from './routes/candidates.js';
 import subscribeRoutes from './routes/subscribe.js';
 import reviewRoutes from './routes/review.js';
+import comminuty from './routes/community.js'
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use('/api/employers', employerRoutes);
 app.use('/api/candidates', candidateRoutes);
 app.use('/api/subscribe', subscribeRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/community', comminuty);
 
 
 app.get('/', (req, res) => {
