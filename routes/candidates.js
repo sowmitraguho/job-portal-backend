@@ -6,12 +6,31 @@ const router = express.Router();
 // Get all candidates   
 router.get('/', async (req, res) => {
     try {
-        const candidates = await Candidate.find().populate('appliedJobs', 'title');
-        res.json(candidates);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        // Fetch candidates with pagination
+        const candidates = await Candidate.find()
+            .populate('appliedJobs', 'title')
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 }); // Sort by newest first (you can adjust the field if needed)
+
+        // Total count for frontend pagination
+        const totalCandidates = await Candidate.countDocuments();
+
+        res.json({
+            page,
+            totalPages: Math.ceil(totalCandidates / limit),
+            totalCandidates,
+            candidates,
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 // Get single employee
 router.get('/:id', async (req, res) => {
