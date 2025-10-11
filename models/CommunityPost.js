@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 const communityPostSchema = new mongoose.Schema(
     {
-        username: { type: String, required: true },
+        username: { type: String },
         email: { type: String, required: true },
         postTitle: { type: String, required: true },
         post: { type: String, required: true },

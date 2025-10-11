@@ -3,19 +3,13 @@ import mongoose from 'mongoose';
 const employerSchema = new mongoose.Schema(
   {
     firstName: {
-      type: String,
-      required: [true, 'Employer name is required'],
-      trim: true,
+      type: String
     },
     LastName: {
-      type: String,
-      required: [true, 'Employer name is required'],
-      trim: true,
+      type: String
     },
     name: {
-      type: String,
-      required: [true, 'Employer name is required'],
-      trim: true,
+      type: String
     },
     authProvider: {
       type: String,

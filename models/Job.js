@@ -3,8 +3,7 @@ import mongoose from 'mongoose';
 const applicantSchema = new mongoose.Schema({
   applicant: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Candidate",
-    required: true,
+    ref: "Candidate"
   },
   status: {
     type: String,

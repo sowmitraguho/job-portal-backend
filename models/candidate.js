@@ -4,7 +4,6 @@ const appliedJobSchema = new mongoose.Schema({
   job: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Job",
-    required: true,
   },
   status: {
     type: String,
@@ -16,9 +15,9 @@ const appliedJobSchema = new mongoose.Schema({
 
 const candidateSchema = new mongoose.Schema(
   {
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
-    name: { type: String, required: true, trim: true },
+    firstName: { type: String },
+    lastName: { type: String },
+    name: { type: String },
     authProvider: {
       type: String,
       enum: ['google', 'email', 'github'],
