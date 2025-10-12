@@ -5,27 +5,61 @@ import Employee from '../models/candidate.js';
 const router = express.Router();
 
 // Get all jobs
+// router.get('/', async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const skip = (page - 1) * limit;
+
+//     // Fetch jobs with pagination
+//     const jobs = await Job.find()
+//       .populate('employer', 'name companyName email')
+//       .skip(skip)
+//       .limit(limit).sort({ postedAt: -1 })
+//       .sort({ postedAt: -1 });
+
+//     // Optional: total count for frontend to calculate total pages
+//     const totalJobs = await Job.countDocuments();
+
+//     res.json({
+//       page,
+//       totalPages: Math.ceil(totalJobs / limit),
+//       totalJobs,
+//       jobs
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Fetch jobs with pagination
-    const jobs = await Job.find()
+    // ✅ Filters from query params
+    const { jobType, workArrangement } = req.query;
+
+    // ✅ Build dynamic filter
+    const filter = {};
+    if (jobType) filter.jobType = jobType;
+    if (workArrangement) filter.workArrangement = workArrangement;
+
+    // ✅ Fetch filtered + paginated jobs
+    const jobs = await Job.find(filter)
       .populate('employer', 'name companyName email')
       .skip(skip)
-      .limit(limit).sort({ postedAt: -1 })
+      .limit(limit)
       .sort({ postedAt: -1 });
 
-    // Optional: total count for frontend to calculate total pages
-    const totalJobs = await Job.countDocuments();
+    // ✅ Total count for pagination (with same filter)
+    const totalJobs = await Job.countDocuments(filter);
 
     res.json({
       page,
       totalPages: Math.ceil(totalJobs / limit),
       totalJobs,
-      jobs
+      jobs,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

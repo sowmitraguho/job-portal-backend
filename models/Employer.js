@@ -13,8 +13,8 @@ const employerSchema = new mongoose.Schema(
     },
     authProvider: {
       type: String,
-      enum: ['google', 'email', 'github'],
-      default: 'email'
+      enum: ['google', 'Email/Password', 'github'],
+      default: 'Email/Password'
     },
     email: {
       type: String,
@@ -23,6 +23,13 @@ const employerSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       match: [/.+\@.+\..+/, 'Please enter a valid email address'],
+    },
+    phone: {
+      type: String,
+      unique: true,
+    },
+    password: {
+      type: String,
     },
     companyName: {
       type: String,
