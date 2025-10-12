@@ -4,13 +4,13 @@ import Employer from '../models/Employer.js';
 import Candidate from '../models/candidate.js';
 
 export const loginUser = async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
 
     try {
-        let user;
-
-        if (role === 'employer') user = await Employer.findOne({ email });
-        else user = await Candidate.findOne({ email });
+        //let user;
+        const user = (await Employer.findOne({ email })) || (await Candidate.findOne({ email }));
+        // if (role === 'employer') user = await Employer.findOne({ email });
+        // else user = await Candidate.findOne({ email });
 
         if (!user) return res.status(404).json({ message: 'User not found' });
 
