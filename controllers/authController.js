@@ -50,10 +50,10 @@ export const checkUserExist = async (req, res) => {
 
     try {
         const employer = await Employer.findOne({ email });
-        const employee = await Employee.findOne({ email });
+        const candidate = await Candidate.findOne({ email });
 
         if (employer) return res.status(200).json({ exists: true, role: 'employer' });
-        if (employee) return res.status(200).json({ exists: true, role: 'employee' });
+        if (candidate) return res.status(200).json({ exists: true, role: 'candidate' });
 
         res.status(200).json({ exists: false });
     } catch (error) {
