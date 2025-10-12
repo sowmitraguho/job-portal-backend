@@ -17,7 +17,7 @@ const jobSchema = new mongoose.Schema({
   jobTitle: { type: String, required: true },
   companyName: { type: String, required: true },
   companyDescription: String,
-  jobStatus: { type: String, enum: ['Active', 'Expired', 'Cancelled'] },
+  status: { type: String, enum: ["Job Ongoing", "Candidate Listing", "Interviewing"] },
   companyGoals: String,
   location: String,
   jobDescription: String,
