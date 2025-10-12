@@ -17,7 +17,6 @@ const candidateSchema = new mongoose.Schema(
   {
     firstName: { type: String },
     lastName: { type: String },
-    name: { type: String },
     authProvider: {
       type: String,
       enum: ['google', 'email', 'github'],
@@ -31,7 +30,7 @@ const candidateSchema = new mongoose.Schema(
     role: { type: String, default: "candidate" },
     education: [
       {
-        institution: { type: String, required: true },
+        institution: { type: String },
         degree: { type: String },
         fieldOfStudy: { type: String },
         startDate: { type: Date },
@@ -42,9 +41,9 @@ const candidateSchema = new mongoose.Schema(
 
     experience: [
       {
-        company: { type: String, required: true },
-        position: { type: String, required: true },
-        startDate: { type: Date, required: true },
+        company: { type: String  },
+        position: { type: String },
+        startDate: { type: Date },
         endDate: { type: Date }, // optional — may not exist
         isCurrentlyWorking: { type: Boolean, default: false }, // new field
         responsibilities: { type: String },
