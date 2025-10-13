@@ -16,13 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({
-  origin: [
-    "http://localhost:3000",       // your local frontend
-    "https://yourfrontend.com"     // add production domain here later
-  ],
-  credentials: true,               // allow cookies / tokens
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://job-quest-frontend-lemon.vercel.app", "https://job-quest-frontend-phi.vercel.app"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // MongoDB connection
