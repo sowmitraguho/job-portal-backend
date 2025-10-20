@@ -1,5 +1,6 @@
 import express from 'express';
 import Candidate from '../models/candidate.js';
+import bcrypt from "bcryptjs";
 
 const router = express.Router();
 
@@ -33,16 +34,16 @@ router.get('/', async (req, res) => {
 
 // GET /candidates?ids=cand1,cand2,cand3
 router.get('/applied', async (req, res) => {
-  const { ids } = req.query; 
-  if (!ids) return res.status(400).json({ message: 'No ids provided' });
+    const { ids } = req.query;
+    if (!ids) return res.status(400).json({ message: 'No ids provided' });
 
-  const idArray = (ids).split(',');
-  try {
-    const candidates = await Candidate.find({ _id: { $in: idArray } });
-    res.json({ candidates });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    const idArray = (ids).split(',');
+    try {
+        const candidates = await Candidate.find({ _id: { $in: idArray } });
+        res.json({ candidates });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 // Get single employee
@@ -87,10 +88,18 @@ router.get('/by-job/:jobId', async (req, res) => {
 
 // Create candidate
 router.post('/', async (req, res) => {
-    const candidate = new Candidate(req.body);
+
+    //const candidate = new Candidate(req.body);
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+    // Create candidate with hashed password
+    const candidate = new Candidate({
+      ...req.body,
+      password: hashedPassword,
+    });
     try {
         const newCandidate = await candidate.save();
-        res.status(201).json(newCandidate);
+        res.status(201).json({user: newCandidate});
     } catch (err) {
         res.status(400).json({ message: err.message });
     }

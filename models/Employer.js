@@ -5,10 +5,7 @@ const employerSchema = new mongoose.Schema(
     firstName: {
       type: String
     },
-    LastName: {
-      type: String
-    },
-    name: {
+    lastName: {
       type: String
     },
     authProvider: {
@@ -23,10 +20,6 @@ const employerSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       match: [/.+\@.+\..+/, 'Please enter a valid email address'],
-    },
-    phone: {
-      type: String,
-      unique: true,
     },
     password: {
       type: String,

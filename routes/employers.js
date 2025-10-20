@@ -4,6 +4,8 @@ import Employer from '../models/Employer.js';
 import Job from '../models/Job.js';
 import Candidate from '../models/candidate.js';
 import { verifyToken } from "../middleware/verifyToken.js";
+import bcrypt from "bcryptjs";
+
 
 const router = express.Router();
 
@@ -37,10 +39,14 @@ router.get('/:id', async (req, res) => {
 
 // Create employer
 router.post('/', async (req, res) => {
-  const employer = new Employer(req.body);
+  const hashedPassword = await bcrypt.hash(req.body.password, 10);
+  const employer = new Employer({
+    ...req.body,
+    password: hashedPassword,
+  });
   try {
     const newEmployer = await employer.save();
-    res.status(201).json(newEmployer);
+    res.status(201).json({ user: newEmployer });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
