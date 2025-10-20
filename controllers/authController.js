@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 import Employer from '../models/Employer.js';
 import Candidate from '../models/candidate.js';
+import bcrypt from 'bcryptjs';
 
 export const loginUser = async (req, res) => {
   const { email, password, googleLogin } = req.body;
@@ -12,10 +13,9 @@ export const loginUser = async (req, res) => {
 
     if (!user) {
       // If user is coming from Google and not in DB — auto-register or reject
-      if (googleLogin) {
-        return res.status(404).json({ message: 'User not found in system. Please sign up first.' });
-      } else {
-        return res.status(404).json({ message: 'User not found' });
+      if (!googleLogin) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
       }
     }
 
