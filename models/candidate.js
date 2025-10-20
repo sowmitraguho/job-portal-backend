@@ -28,6 +28,7 @@ const candidateSchema = new mongoose.Schema(
     address: { type: String },
     bio: { type: String, maxlength: 500 },
     role: { type: String, default: "candidate" },
+    password: {type: String},
     education: [
       {
         institution: { type: String },
@@ -41,7 +42,7 @@ const candidateSchema = new mongoose.Schema(
 
     experience: [
       {
-        company: { type: String  },
+        company: { type: String },
         position: { type: String },
         startDate: { type: Date },
         endDate: { type: Date }, // optional — may not exist
