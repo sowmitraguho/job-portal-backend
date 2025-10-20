@@ -19,7 +19,7 @@ export const loginUser = async (req, res) => {
       }
     }
 
-    
+
 
     // ✅ Create JWT
     const token = jwt.sign(
@@ -27,6 +27,13 @@ export const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
+    // set token in cookies
+    res.cookie('auth-token', token, {
+      httpOnly: true,
+      secure: true, // use true in production (HTTPS)
+      sameSite: 'None', // or 'Strict' depending on your CORS setup
+      maxAge: 60 * 60 * 1000 // 1 hour
+    });
 
     // ✅ Send JWT to client
     res.status(200).json({
