@@ -19,11 +19,7 @@ export const loginUser = async (req, res) => {
       }
     }
 
-    // ⚙️ Skip password check if it's a Google login
-    if (!googleLogin) {
-      if (user.password !== password)
-        return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    
 
     // ✅ Create JWT
     const token = jwt.sign(
