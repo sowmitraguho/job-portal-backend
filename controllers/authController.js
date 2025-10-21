@@ -38,12 +38,13 @@ export const loginUser = async (req, res) => {
       { expiresIn: '7d' }
     );
     //  Set cookie
-    res.cookie('authToken', token, {
-      // httpOnly: true,
-      // secure: true, // true for HTTPS
-      // sameSite: 'None',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    res.cookie('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // only secure in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+
 
     //  Send response
     res.status(200).json({
