@@ -80,9 +80,8 @@ export const loginUser = async (req, res) => {
 export const checkUserExist = async (req, res) => {
   const token = req.cookies.authToken; // read from cookie
 
-  if (!token) {
-    return res.status(400).json({ message: "No token found" });
-  }
+  if (!token) return res.status(401).json({ message: "No token found" });
+
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -101,7 +100,7 @@ export const checkUserExist = async (req, res) => {
 
     res.status(200).json({ user });
   } catch (error) {
-    res.status(400).json({ message: "Invalid or expired token" });
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
@@ -117,3 +116,14 @@ export const checkLoginStatus = async (req, res) => {
     res.status(401).json({ loggedIn: false, message: 'Invalid or expired token' });
   }
 };
+
+// authController.js
+export const logoutUser = (req, res) => {
+  res.clearCookie('authToken', {
+    httpOnly: true,
+    secure: true,       // true in production (HTTPS)
+    sameSite: 'None',
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+};
+
