@@ -38,7 +38,7 @@ export const loginUser = async (req, res) => {
       { expiresIn: '7d' }
     );
     //  Set cookie
-    res.cookie('auth-token', token, {
+    res.cookie('authToken', token, {
       // httpOnly: true,
       // secure: true, // true for HTTPS
       // sameSite: 'None',
@@ -79,7 +79,7 @@ export const loginUser = async (req, res) => {
 //   }
 // };
 export const checkUserExist = async (req, res) => {
-  const token = req.cookies.token; // read from cookie
+  const token = req.cookies.authToken; // read from cookie
 
   if (!token) {
     return res.status(400).json({ message: "No token found" });
