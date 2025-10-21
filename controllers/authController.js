@@ -61,21 +61,48 @@ export const loginUser = async (req, res) => {
 };
 
 
-export const checkUserExist = async (req, res) => {
-  const { email } = req.query;
+// export const checkUserExist = async (req, res) => {
+//   const { email } = req.query;
 
-  if (!email) return res.status(400).json({ message: 'Email is required' });
+//   if (!email) return res.status(400).json({ message: 'Email is required' });
+
+//   try {
+//     const employer = await Employer.findOne({ email });
+//     const candidate = await Candidate.findOne({ email });
+
+//     if (employer) return res.status(200).json({ user: employer, exists: true, role: 'employer' });
+//     if (candidate) return res.status(200).json({ user: candidate, exists: true, role: 'candidate' });
+
+//     res.status(200).json({ exists: false });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// };
+export const checkUserExist = async (req, res) => {
+  const token = req.cookies.token; // read from cookie
+
+  if (!token) {
+    return res.status(400).json({ message: "No token found" });
+  }
 
   try {
-    const employer = await Employer.findOne({ email });
-    const candidate = await Candidate.findOne({ email });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { id, role } = decoded;
 
-    if (employer) return res.status(200).json({ user: employer, exists: true, role: 'employer' });
-    if (candidate) return res.status(200).json({ user: candidate, exists: true, role: 'candidate' });
+    let user;
+    if (role === "employer") {
+      user = await Employer.findById(id).select("-password");
+    } else if (role === "candidate") {
+      user = await Candidate.findById(id).select("-password");
+    }
 
-    res.status(200).json({ exists: false });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    res.status(400).json({ message: "Invalid or expired token" });
   }
 };
 
