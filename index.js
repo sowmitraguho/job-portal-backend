@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import jobRoutes from './routes/jobs.js';
 import employerRoutes from './routes/employers.js';
@@ -23,6 +24,9 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Middleware for parsing cookies
+app.use(cookieParser());
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {

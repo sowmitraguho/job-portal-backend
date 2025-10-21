@@ -8,43 +8,57 @@ export const loginUser = async (req, res) => {
   const { email, password, googleLogin } = req.body;
 
   try {
+    // Find user from either Employer or Candidate collection
     let user =
       (await Employer.findOne({ email })) || (await Candidate.findOne({ email }));
 
     if (!user) {
-      // If user is coming from Google and not in DB — auto-register or reject
+      // If user not found and not Google login, reject
       if (!googleLogin) {
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // If Google login, you can auto-register here if needed
+      // (optional)
+      return res.status(401).json({ message: 'Google user not registered' });
+    }
+
+    // If not Google login, check password
+    if (!googleLogin) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid credentials' });
       }
     }
 
-
-
-    // ✅ Create JWT
+    //  Create JWT
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    // set token in cookies
+    //  Set cookie
     res.cookie('auth-token', token, {
       httpOnly: true,
-      secure: true, // use true in production (HTTPS)
-      sameSite: 'None', // or 'Strict' depending on your CORS setup
-      maxAge: 60 * 60 * 1000 // 1 hour
+      secure: true, // true for HTTPS
+      sameSite: 'None',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-    // ✅ Send JWT to client
+    //  Send response
     res.status(200).json({
       message: 'Login successful',
-      token,
-      user: { id: user._id, role: user.role, email: user.email },
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      }
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
 
 export const checkUserExist = async (req, res) => {
   const { email } = req.query;
