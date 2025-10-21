@@ -38,7 +38,7 @@ export const loginUser = async (req, res) => {
       { expiresIn: '7d' }
     );
     //  Set cookie
-    res.cookie('auth-token', token, {
+    res.cookie('authToken', token, {
 
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
