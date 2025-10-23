@@ -46,16 +46,12 @@ export const loginUser = async (req, res) => {
       path: "/",
     });
 
-
+    const { password, ...othersInfo} = user;
     //  Send response
     res.status(200).json({
       message: 'Login successful',
       authToken: token,
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role
-      }
+      user: othersInfo
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
