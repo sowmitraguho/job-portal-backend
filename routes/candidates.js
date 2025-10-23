@@ -21,12 +21,21 @@ router.get('/', async (req, res) => {
         // Total count for frontend pagination
         const totalCandidates = await Candidate.countDocuments();
 
+        // res.json({
+        //     page,
+        //     totalPages: Math.ceil(totalCandidates / limit),
+        //     totalCandidates,
+        //     candidates,
+        // });
         res.json({
             page,
             totalPages: Math.ceil(totalCandidates / limit),
             totalCandidates,
+            hasNextPage: page * limit < totalCandidates,
+            hasPrevPage: page > 1,
             candidates,
         });
+
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -45,18 +54,6 @@ router.get('/applied', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
-// Get single employee
-router.get('/:id', async (req, res) => {
-    try {
-        const candidate = await Candidate.findById(req.params.id).populate('appliedJobs', 'title');
-        if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
-        res.json(candidate);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
 
 //get by applied job info
 router.get('/by-job/:jobId', async (req, res) => {
@@ -86,30 +83,48 @@ router.get('/by-job/:jobId', async (req, res) => {
 });
 
 
+// Get single Candidate
+router.get('/:id', async (req, res) => {
+    try {
+        const candidate = await Candidate.findById(req.params.id).populate('appliedJobs', 'title');
+        if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
+        res.json(candidate);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+
+
 // Create candidate
 router.post('/', async (req, res) => {
 
     //const candidate = new Candidate(req.body);
+    if (!req.body.password) {
+        return res.status(400).json({ message: 'Password is required' });
+    }
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
 
     // Create candidate with hashed password
     const candidate = new Candidate({
-      ...req.body,
-      password: hashedPassword,
+        ...req.body,
+        password: hashedPassword,
     });
     try {
         const newCandidate = await candidate.save();
-        res.status(201).json({user: newCandidate});
+        res.status(201).json({ user: newCandidate });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
 });
 
-// Update employee
+// Update Candidate
 router.put('/:id', async (req, res) => {
     try {
         const { job, status, primaryEnquiries } = req.body;
-        const candidate = await Employee.findByIdAndUpdate(
+        const candidate = await Candidate.findByIdAndUpdate(
             req.params.id,
             { $push: { appliedJobs: { job, status, primaryEnquiries } } },
             { new: true }
@@ -121,7 +136,7 @@ router.put('/:id', async (req, res) => {
 });
 
 
-// Delete employee
+// Delete Candidate
 router.delete('/:id', async (req, res) => {
     try {
         await Candidate.findByIdAndDelete(req.params.id);
