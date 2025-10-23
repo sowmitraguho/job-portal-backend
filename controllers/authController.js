@@ -46,12 +46,13 @@ export const loginUser = async (req, res) => {
       path: "/",
     });
 
-    const { password, ...othersInfo} = user._doc;
-    //  Send response
+    const userObj = user.toObject();
+    delete userObj.password;
+
     res.status(200).json({
       message: 'Login successful',
       authToken: token,
-      user: othersInfo
+      user: userObj,
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
