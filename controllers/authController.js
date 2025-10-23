@@ -46,7 +46,7 @@ export const loginUser = async (req, res) => {
       path: "/",
     });
 
-    const { password, ...othersInfo} = user;
+    const { password, ...othersInfo} = user._doc;
     //  Send response
     res.status(200).json({
       message: 'Login successful',
