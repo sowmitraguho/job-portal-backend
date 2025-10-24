@@ -3,7 +3,6 @@ import express from 'express';
 import Employer from '../models/Employer.js';
 import Job from '../models/Job.js';
 import Candidate from '../models/candidate.js';
-import { verifyToken } from "../middleware/verifyToken.js";
 import bcrypt from "bcryptjs";
 
 
