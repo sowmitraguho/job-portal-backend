@@ -4,33 +4,6 @@ import Employee from '../models/candidate.js';
 
 const router = express.Router();
 
-// Get all jobs
-// router.get('/', async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const skip = (page - 1) * limit;
-
-//     // Fetch jobs with pagination
-//     const jobs = await Job.find()
-//       .populate('employer', 'name companyName email')
-//       .skip(skip)
-//       .limit(limit).sort({ postedAt: -1 })
-//       .sort({ postedAt: -1 });
-
-//     // Optional: total count for frontend to calculate total pages
-//     const totalJobs = await Job.countDocuments();
-
-//     res.json({
-//       page,
-//       totalPages: Math.ceil(totalJobs / limit),
-//       totalJobs,
-//       jobs
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// });
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -79,15 +52,16 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create job
-router.post('/', async (req, res) => {
-  const job = new Job(req.body);
-  try {
-    const newJob = await job.save();
-    res.status(201).json(newJob);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
+// router.post('/', async (req, res) => {
+//   const job = new Job(req.body);
+//   try {
+//     const newJob = await job.save();
+//     res.status(201).json(newJob);
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// });
+router.post("/", verifyToken, postJob);
 
 // Update job
 router.put('/:id', async (req, res) => {
