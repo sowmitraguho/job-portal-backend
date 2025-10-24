@@ -12,35 +12,38 @@ router.get('/', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // ✅ Filters from query params
+    //  Filters from query params
     const { jobType, workArrangement } = req.query;
 
-    // ✅ Build dynamic filter
+    // Build dynamic filter
     const filter = {};
     if (jobType) filter.jobType = jobType;
     if (workArrangement) filter.workArrangement = workArrangement;
 
-    // ✅ Fetch filtered + paginated jobs
+    // Fetch filtered + paginated jobs
     const jobs = await Job.find(filter)
       .populate('employer', 'name companyName email')
       .skip(skip)
       .limit(limit)
       .sort({ postedAt: -1 });
 
-    // ✅ Total count for pagination (with same filter)
+    // Total count for pagination (with same filter)
     const totalJobs = await Job.countDocuments(filter);
+
 
     res.json({
       page,
       totalPages: Math.ceil(totalJobs / limit),
       totalJobs,
+      hasNextPage: page * limit < totalJobs,
+      hasPrevPage: page > 1,
       jobs,
     });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 // Get single job
 router.get('/:id', async (req, res) => {
@@ -66,7 +69,7 @@ router.get('/:id', async (req, res) => {
 router.post("/", verifyToken, postJob);
 
 // Update job
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { applicant, status, primaryEnquiries } = req.body;
     const updatedJob = await Job.findByIdAndUpdate(
@@ -74,13 +77,18 @@ router.put('/:id', async (req, res) => {
       { $push: { applicants: { applicant, status, primaryEnquiries } } },
       { new: true }
     );
-    res.json(updatedJob);
+    res.status(200).json({
+      success: true,
+      message: "Job updated successfully",
+      data: updatedJob,
+    });
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', verifyToken, async (req, res) => {
   try {
     const { applicantId, status } = req.body;
 
@@ -95,16 +103,19 @@ router.patch('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Applicant not found' });
     }
 
-    res.json(updatedJob);
+    res.status(200).json({
+      success: true,
+      message: "Job updated successfully",
+      data: updatedJob,
+    });
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-
-
 // Delete job
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
     await Job.findByIdAndDelete(req.params.id);
     res.json({ message: 'Job deleted' });
@@ -114,7 +125,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Apply for job
-router.post('/:id/apply', async (req, res) => {
+router.post('/:id/apply', verifyToken, async (req, res) => {
   const { employeeId } = req.body; // ID of logged-in employee
   const { id } = req.params; // job ID
 
@@ -127,11 +138,15 @@ router.post('/:id/apply', async (req, res) => {
     }
 
     // Avoid duplicate applications
-    if (job.applicants.includes(employeeId)) {
+    const alreadyApplied = job.applicants.some(
+      (a) => a.applicant.toString() === employeeId
+    );
+    if (alreadyApplied) {
       return res.status(400).json({ message: 'Already applied' });
     }
 
-    job.applicants.push(employeeId);
+    // Push applicant with structure
+    job.applicants.push({ applicant: employeeId, status: 'applied' });
     employee.appliedJobs.push(id);
 
     await job.save();

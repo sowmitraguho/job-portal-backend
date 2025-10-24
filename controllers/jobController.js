@@ -1,21 +1,14 @@
 import Job from "../models/Job.js";
 import Employer from "../models/Employer.js";
 
-/**
- * @desc    Post a new job (employer only)
- * @route   POST /api/jobs
- * @access  Private (employer)
- */
 export const postJob = async (req, res) => {
   try {
-    // Get employer ID from decoded JWT (set by auth middleware)
     const employerId = req.user?.id;
 
     if (!employerId) {
       return res.status(401).json({ message: "Unauthorized: Employer ID not found" });
     }
 
-    // Destructure job data from request body
     const {
       jobTitle,
       companyName,
@@ -42,7 +35,7 @@ export const postJob = async (req, res) => {
       applicationDeadline,
     } = req.body;
 
-    // ✅ Create a new job
+    // Create a new job
     const newJob = new Job({
       jobTitle,
       companyName,
@@ -70,13 +63,24 @@ export const postJob = async (req, res) => {
       employer: employerId, // link the employer
     });
 
-    // ✅ Save the job to DB
     const savedJob = await newJob.save();
-
-    // ✅ Push job ID into employer's jobsPosted array
     await Employer.findByIdAndUpdate(employerId, {
       $push: { jobsPosted: savedJob._id },
     });
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      const savedJob = await newJob.save({ session });
+      await Employer.findByIdAndUpdate(employerId, { $push: { jobsPosted: savedJob._id } }, { session });
+      await session.commitTransaction();
+      res.status(201).json({ message: "Job posted successfully", job: savedJob });
+    } catch (error) {
+      await session.abortTransaction();
+      res.status(500).json({ message: "Server error", error: error.message });
+    } finally {
+      session.endSession();
+    }
 
     res.status(201).json({
       message: "Job posted successfully",
