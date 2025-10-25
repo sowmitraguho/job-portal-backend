@@ -1,13 +1,11 @@
 // routes/communityRoutes.js
 import express from 'express';
 import CommunityPost from '../models/CommunityPost.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-/**
- * GET /api/community
- * Fetch all community posts (sorted by latest)
- */
+// Get all posts (latest first)
 router.get('/', async (req, res) => {
   try {
     const posts = await CommunityPost.find().sort({ createdAt: -1 });
@@ -17,13 +15,38 @@ router.get('/', async (req, res) => {
   }
 });
 
-/**
- * POST /api/community
- * Create a new community post
- */
-router.post('/', async (req, res) => {
+// Get single post details by ID
+router.get('/:id', async (req, res) => {
   try {
-    const newPost = new CommunityPost(req.body);
+    const post = await CommunityPost.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    res.json(post); // Includes poster info, reactions, totals, post content, etc.
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Create a post
+router.post('/', verifyToken, async (req, res) => {
+  try {
+    // req.user should contain id, role, firstName, lastName, email from auth middleware
+    const { postTitle, postImage, post } = req.body;
+
+    const newPost = new CommunityPost({
+      userId: req.user.id,
+      role: req.user.role,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      email: req.user.email,
+      postTitle,
+      postImage,
+      post,
+    });
+
     await newPost.save();
     res.status(201).json(newPost);
   } catch (err) {
@@ -31,37 +54,36 @@ router.post('/', async (req, res) => {
   }
 });
 
-/**
- * PATCH /api/community/:id/react
- * Add or toggle a reaction (like, haha, love)
- */
-router.patch('/:id/react', async (req, res) => {
-  const { userId, type } = req.body; // type = 'like' | 'haha' | 'love'
+// React to a post (like, haha, love)
+router.patch('/:id/react', verifyToken, async (req, res) => {
+  const { type } = req.body; // type = 'like' | 'haha' | 'love'
 
   try {
     const post = await CommunityPost.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
-    const existingReaction = post.reactions.find(r => r.userId.toString() === userId);
+    // Initialize reactions array if not present
+    if (!post.reactions) post.reactions = [];
+
+    const existingReaction = post.reactions.find(
+      (r) => r.userId.toString() === req.user.id
+    );
 
     if (existingReaction) {
       // Toggle or change reaction
       if (existingReaction.type === type) {
-        // Remove reaction if same type clicked again
-        post.reactions = post.reactions.filter(r => r.userId.toString() !== userId);
+        post.reactions = post.reactions.filter((r) => r.userId.toString() !== req.user.id);
       } else {
-        // Change reaction type
         existingReaction.type = type;
       }
     } else {
-      // Add new reaction
-      post.reactions.push({ userId, type });
+      post.reactions.push({ userId: req.user.id, type });
     }
 
     // Recalculate totals
-    post.totalLikes = post.reactions.filter(r => r.type === 'like').length;
-    post.totalHaha = post.reactions.filter(r => r.type === 'haha').length;
-    post.totalLove = post.reactions.filter(r => r.type === 'love').length;
+    post.totalLikes = post.reactions.filter((r) => r.type === 'like').length;
+    post.totalHaha = post.reactions.filter((r) => r.type === 'haha').length;
+    post.totalLove = post.reactions.filter((r) => r.type === 'love').length;
 
     await post.save();
     res.json(post);
@@ -70,8 +92,8 @@ router.patch('/:id/react', async (req, res) => {
   }
 });
 
-
-router.delete('/:id', async (req, res) => {
+// Delete a post
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
     await CommunityPost.findByIdAndDelete(req.params.id);
     res.json({ message: 'Post deleted successfully' });

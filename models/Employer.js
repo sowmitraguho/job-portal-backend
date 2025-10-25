@@ -8,6 +8,9 @@ const employerSchema = new mongoose.Schema(
     lastName: {
       type: String
     },
+    profileImage: {
+      type: String
+    },
     authProvider: {
       type: String,
       enum: ['google', 'Email/Password', 'github'],
@@ -40,30 +43,17 @@ const employerSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      match: [/^\+?\d{10,15}$/, 'Please enter a valid phone number'],
     },
     website: {
       type: String,
       default: '',
     },
-    address: {
-      street: { type: String },
-      city: { type: String },
-      state: { type: String },
-      country: { type: String },
-      postalCode: { type: String },
-    },
-    profileImage: {
-      type: String, // URL to image
-      default: '',
-    },
+    address: { type: String },
     companyLogo: {
-      type: String, // URL to logo
-      default: '',
+      type: String,
     },
     industry: {
       type: String,
-      default: '',
     },
     companySize: {
       type: String,

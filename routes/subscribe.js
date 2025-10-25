@@ -3,10 +3,6 @@ import Subscription from '../models/Subscribers.js';
 
 const router = express.Router();
 
-/**
- * POST /api/subscribe
- * Subscribe a user
- */
 router.post('/', async (req, res) => {
     const { email, userName } = req.body;
 

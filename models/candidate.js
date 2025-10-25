@@ -28,7 +28,8 @@ const candidateSchema = new mongoose.Schema(
     address: { type: String },
     bio: { type: String, maxlength: 500 },
     role: { type: String, default: "candidate" },
-    password: {type: String},
+    profession: { type: String }, //Software Engineer, Web Developer, Marketing Office etc.
+    password: { type: String },
     education: [
       {
         institution: { type: String },
@@ -45,15 +46,15 @@ const candidateSchema = new mongoose.Schema(
         company: { type: String },
         position: { type: String },
         startDate: { type: Date },
-        endDate: { type: Date }, // optional — may not exist
-        isCurrentlyWorking: { type: Boolean, default: false }, // new field
+        endDate: { type: Date },
+        isCurrentlyWorking: { type: Boolean, default: false },
         responsibilities: { type: String },
       },
     ],
 
     skills: [{ type: String }],
 
-    resume: { type: String }, // optional resume URL or file path
+    resume: { type: String },
 
     socialLinks: {
       linkedin: { type: String },

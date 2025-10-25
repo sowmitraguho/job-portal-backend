@@ -1,6 +1,7 @@
 import express from 'express';
 import Candidate from '../models/candidate.js';
 import bcrypt from "bcryptjs";
+import { verifyToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -13,20 +14,14 @@ router.get('/', async (req, res) => {
 
         // Fetch candidates with pagination
         const candidates = await Candidate.find()
-            .populate('appliedJobs', 'title')
+            .populate('appliedJobs', 'jobTitle')
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 }); // Sort by newest first (you can adjust the field if needed)
+            .sort({ createdAt: -1 }); // Sort by newest first 
 
         // Total count for frontend pagination
         const totalCandidates = await Candidate.countDocuments();
 
-        // res.json({
-        //     page,
-        //     totalPages: Math.ceil(totalCandidates / limit),
-        //     totalCandidates,
-        //     candidates,
-        // });
         res.json({
             page,
             totalPages: Math.ceil(totalCandidates / limit),
@@ -42,7 +37,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /candidates?ids=cand1,cand2,cand3
-router.get('/applied', async (req, res) => {
+router.get('/applied', verifyToken, async (req, res) => {
     const { ids } = req.query;
     if (!ids) return res.status(400).json({ message: 'No ids provided' });
 
@@ -56,7 +51,7 @@ router.get('/applied', async (req, res) => {
 });
 
 //get by applied job info
-router.get('/by-job/:jobId', async (req, res) => {
+router.get('/by-job/:jobId', verifyToken, async (req, res) => {
     const { jobId } = req.params;
     const { status } = req.query; // optional filter
 
@@ -84,9 +79,9 @@ router.get('/by-job/:jobId', async (req, res) => {
 
 
 // Get single Candidate
-router.get('/:id', async (req, res) => {
+router.get('/:id', verifyToken, async (req, res) => {
     try {
-        const candidate = await Candidate.findById(req.params.id).populate('appliedJobs', 'title');
+        const candidate = await Candidate.findById(req.params.id).populate('appliedJobs', 'jobTitle');
         if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
         res.json(candidate);
     } catch (err) {
@@ -99,6 +94,8 @@ router.get('/:id', async (req, res) => {
 
 // Create candidate
 router.post('/', async (req, res) => {
+    const existing = await Candidate.findOne({ email: req.body.email });
+    if (existing) return res.status(400).json({ message: 'Email already exists' });
 
     //const candidate = new Candidate(req.body);
     if (!req.body.password) {
@@ -121,7 +118,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update Candidate
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
     try {
         const { job, status, primaryEnquiries } = req.body;
         const candidate = await Candidate.findByIdAndUpdate(
@@ -137,7 +134,7 @@ router.put('/:id', async (req, res) => {
 
 
 // Delete Candidate
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyToken, async (req, res) => {
     try {
         await Candidate.findByIdAndDelete(req.params.id);
         res.json({ message: 'Candidate deleted' });
