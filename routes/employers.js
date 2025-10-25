@@ -38,6 +38,13 @@ router.get('/:id', async (req, res) => {
 
 // Create employer
 router.post('/', async (req, res) => {
+  // Check if email already exists in Candidate collection
+  const existingCandidate = await Candidate.findOne({ email: req.body.email });
+  if (existingCandidate) {
+    return res.status(400).json({ message: "Email already registered as Candidate" });
+  }
+  const existing = await Employer.findOne({ email: req.body.email });
+  if (existing) return res.status(400).json({ message: 'Email already exists' });
   const hashedPassword = await bcrypt.hash(req.body.password, 10);
   const employer = new Employer({
     ...req.body,

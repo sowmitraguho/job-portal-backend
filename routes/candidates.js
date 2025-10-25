@@ -2,6 +2,7 @@ import express from 'express';
 import Candidate from '../models/candidate.js';
 import bcrypt from "bcryptjs";
 import { verifyToken } from '../middleware/authMiddleware.js';
+import Employer from '../models/Employer.js';
 
 const router = express.Router();
 
@@ -96,6 +97,11 @@ router.get('/:id', verifyToken, async (req, res) => {
 router.post('/', async (req, res) => {
     const existing = await Candidate.findOne({ email: req.body.email });
     if (existing) return res.status(400).json({ message: 'Email already exists' });
+    // Check if email exists in Employer collection
+    const existingEmployer = await Employer.findOne({ email });
+    if (existingEmployer) {
+        return res.status(400).json({ message: "Email already registered as Employer" });
+    }
 
     //const candidate = new Candidate(req.body);
     if (!req.body.password) {
