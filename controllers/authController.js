@@ -3,6 +3,12 @@ import jwt from 'jsonwebtoken';
 import Employer from '../models/Employer.js';
 import Candidate from '../models/candidate.js';
 import bcrypt from 'bcryptjs';
+import { OAuth2Client } from "google-auth-library";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const loginUser = async (req, res) => {
   const { email, password, googleLogin } = req.body;
@@ -60,23 +66,6 @@ export const loginUser = async (req, res) => {
 };
 
 
-// export const checkUserExist = async (req, res) => {
-//   const { email } = req.query;
-
-//   if (!email) return res.status(400).json({ message: 'Email is required' });
-
-//   try {
-//     const employer = await Employer.findOne({ email });
-//     const candidate = await Candidate.findOne({ email });
-
-//     if (employer) return res.status(200).json({ user: employer, exists: true, role: 'employer' });
-//     if (candidate) return res.status(200).json({ user: candidate, exists: true, role: 'candidate' });
-
-//     res.status(200).json({ exists: false });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error', error });
-//   }
-// };
 export const checkUserExist = async (req, res) => {
   const token = req.cookies.authToken; // read from cookie
 
@@ -103,22 +92,6 @@ export const checkUserExist = async (req, res) => {
     res.status(401).json({ message: "Invalid or expired token" });
   }
 };
-
-
-// export const checkLoginStatus = async (req, res) => {
-//   try {
-//     const token = req.headers.authorization?.split(' ')[1];
-//     if (!token) return res.status(401).json({ loggedIn: false });
-
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     res.status(200).json({ loggedIn: true, user: decoded });
-//   } catch (err) {
-//     res.status(401).json({ loggedIn: false, message: 'Invalid or expired token' });
-//   }
-// };
-
-// authController.js
-
 
 
 export const checkLoginStatus = async (req, res) => {
@@ -152,4 +125,77 @@ export const logoutUser = (req, res) => {
   });
   res.status(200).json({ message: 'Logged out successfully' });
 };
+
+
+
+
+export const googleAuth = async (req, res) => {
+  try {
+    const { token, role } = req.body; // token from frontend + role (e.g. 'candidate' or 'employer')
+
+    // Verify Google token
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+    const [firstName, ...rest] = name.split(' ');
+    const lastName = rest.join(' ');
+    // Check if user exists in either model
+    let user =
+      (await Employer.findOne({ email })) ||
+      (await Candidate.findOne({ email }));
+
+    // Create new user if not exists
+    if (!user) {
+      if (role === "employer") {
+        user = new Employer({
+          firstName, lastName,
+          email,
+          profileImage: picture,
+          googleLogin: true,
+        });
+      } else {
+        user = new Candidate({
+          firstName, lastName,
+          email,
+          profileImage: picture,
+          googleLogin: true,
+        });
+      }
+      await user.save();
+    }
+
+    // Generate your own JWT
+    const jwtToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // Set cookie
+    res.cookie("authToken", jwtToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    res.status(200).json({
+      message: "Google login successful",
+      user: userObj,
+      token: jwtToken,
+    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    res.status(400).json({ message: "Google authentication failed" });
+  }
+};
+
 

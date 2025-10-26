@@ -131,5 +131,5 @@ router.post('/', async (req, res) => {
   }
 }); 
 
-check all okay here or not.
-i want to save cookies while new user sign up and old user logged in and kept user loggedin  even after reopen or refreshing the site. tell me if anything to require change because cookies are not being stored and shown in browser. 
+now i want to set google authentication combining with my server. user can signup and logged in though google and it will create a new user (while signup) in db and fetch user data (while login). what to do in backend and frontend?
+
