@@ -3,6 +3,7 @@ import Candidate from '../models/candidate.js';
 import bcrypt from "bcryptjs";
 import { verifyToken } from '../middleware/authMiddleware.js';
 import Employer from '../models/Employer.js';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 

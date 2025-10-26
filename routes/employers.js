@@ -5,6 +5,7 @@ import Job from '../models/Job.js';
 import Candidate from '../models/candidate.js';
 import bcrypt from "bcryptjs";
 import { verifyToken } from '../middleware/authMiddleware.js';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
