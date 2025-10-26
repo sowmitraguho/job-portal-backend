@@ -173,7 +173,20 @@ router.post('/', async (req, res) => {
     });
     try {
         const newCandidate = await candidate.save();
-        res.status(201).json({ user: newCandidate });
+        const token = jwt.sign(
+              { id: newCandidate._id, role: newCandidate.role },
+              process.env.JWT_SECRET,
+              { expiresIn: '7d' }
+            );
+            //  Set cookie
+            res.cookie('authToken', token, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+              path: "/",
+            });
+        res.status(201).json({ user: newCandidate, token });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }

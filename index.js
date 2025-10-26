@@ -19,7 +19,7 @@ app.use(express.json());
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://job-quest-frontend-lemon.vercel.app", "https://job-quest-frontend-phi.vercel.app"],
+    origin: ["http://localhost:5173", "http://localhost:3000", "https://job-quest-frontend-lemon.vercel.app", "https://job-quest-frontend-phi.vercel.app"],
     credentials: true,
   })
 );
@@ -29,11 +29,11 @@ app.use(cookieParser());
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.log(err));
 
 // Routes
 app.use('/api/jobs', jobRoutes);
@@ -45,7 +45,7 @@ app.use('/api/community', comminuty);
 app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
-    res.send('Job Portal API is running');
+  res.send('Job Portal API is running');
 });
 
 // Start server

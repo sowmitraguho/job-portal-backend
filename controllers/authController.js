@@ -105,19 +105,45 @@ export const checkUserExist = async (req, res) => {
 };
 
 
+// export const checkLoginStatus = async (req, res) => {
+//   try {
+//     const token = req.headers.authorization?.split(' ')[1];
+//     if (!token) return res.status(401).json({ loggedIn: false });
+
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     res.status(200).json({ loggedIn: true, user: decoded });
+//   } catch (err) {
+//     res.status(401).json({ loggedIn: false, message: 'Invalid or expired token' });
+//   }
+// };
+
+// authController.js
+
+
+
 export const checkLoginStatus = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ loggedIn: false });
+    const token = req.cookies.authToken; // ✅ Read from cookies
+
+    if (!token) {
+      return res.status(401).json({ loggedIn: false, message: "No token found" });
+    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    res.status(200).json({ loggedIn: true, user: decoded });
+
+    res.status(200).json({
+      loggedIn: true,
+      user: decoded,
+    });
   } catch (err) {
-    res.status(401).json({ loggedIn: false, message: 'Invalid or expired token' });
+    res.status(401).json({
+      loggedIn: false,
+      message: "Invalid or expired token",
+    });
   }
 };
 
-// authController.js
+
 export const logoutUser = (req, res) => {
   res.clearCookie('authToken', {
     httpOnly: true,
