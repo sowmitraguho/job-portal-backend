@@ -1,92 +1,138 @@
 export const fakePosts = [
   {
-    "username": "fahamida_nimra",
-    "email": "fahamida@example.com",
-    "postTitle": "How to align career switches in resume?",
-    "post": "I’ve switched between a few industries early in my career and now my resume looks a bit scattered. Recruiters seem unsure about my focus. How can I present my experience so it feels cohesive and shows growth instead of inconsistency?",
-    "totalLikes": 45,
-    "totalHaha": 8,
-    "totalLove": 22
+    userId: "66fc9b2d4e5f1a37a1000003",
+    role: "Candidate",
+    firstName: "Nusrat",
+    lastName: "Jahan",
+    email: "nusrat.codes@gmail.com",
+    postTitle: "The Myth of ‘Perfect Job’ — What I Learned After Switching Twice",
+    postImage: "https://i.ibb.co/6wDFf9h/perfect-job.jpg",
+    post: "When I started my career, I was obsessed with finding the 'perfect job' — high pay, great culture, remote flexibility, and meaningful work. But after switching two companies in less than two years, I realized something uncomfortable: perfection doesn’t exist. Every role has trade-offs. One had great pay but no work-life balance, the other offered flexibility but little career growth. What matters most is knowing your priorities — what you value today might not be the same a year later. I’ve learned to focus on growth, not perfection. The more I stopped chasing an ideal, the happier I became in my current role. 🌻",
+    postStatus: "approved",
+    totalLikes: [
+      "66fc9b2d4e5f1a37a1000002",
+      "66fc9b2d4e5f1a37a1000005"
+    ],
+    totalHaha: [],
+    totalLove: [
+      "66fc9b2d4e5f1a37a1000004"
+    ],
+    postDate: "2025-10-26T08:45:00.000Z",
+    comments: [
+      {
+        commenterId: "66fc9b2d4e5f1a37a1000001",
+        role: "Employer",
+        commenterName: "Imran Hossain",
+        commenterEmail: "imran@softgen.io",
+        commentText: "Very well said. As an employer, I often tell candidates that no company is perfect — alignment matters more than perfection.",
+        commentDate: "2025-10-26T08:55:00.000Z",
+        totalLikes: ["66fc9b2d4e5f1a37a1000005"],
+        totalHaha: [],
+        totalLove: []
+      },
+      {
+        commenterId: "66fc9b2d4e5f1a37a1000004",
+        role: "Candidate",
+        commenterName: "Rafiul Hasan",
+        commenterEmail: "rafiul.jobseeker@gmail.com",
+        commentText: "This post hit home! I switched jobs last year for a ‘better offer,’ but ended up missing my old team and culture.",
+        commentDate: "2025-10-26T09:00:00.000Z",
+        totalLikes: ["66fc9b2d4e5f1a37a1000003"],
+        totalHaha: [],
+        totalLove: ["66fc9b2d4e5f1a37a1000001"]
+      }
+    ]
   },
   {
-    "username": "arif_hasan",
-    "email": "arif.hasan@example.com",
-    "postTitle": "Is learning TypeScript worth it for frontend devs?",
-    "post": "I’ve been using JavaScript for years, but recently I see most companies asking for TypeScript experience. For someone who mostly builds React apps, is it worth switching completely?",
-    "totalLikes": 72,
-    "totalHaha": 5,
-    "totalLove": 30
+    userId: "66fc9b2d4e5f1a37a1000005",
+    role: "Candidate",
+    firstName: "Farhana",
+    lastName: "Tuli",
+    email: "farhana.designs@gmail.com",
+    postTitle: "Remote Work Burnout is Real — Here’s How I Recovered",
+    postImage: "https://i.ibb.co/SRhCQsm/remote-burnout.jpg",
+    post: "Working remotely was my dream come true — until I found myself working from sunrise to midnight. There was no ‘office time,’ no commute, and apparently… no boundaries. It started to affect my sleep, health, and creativity. One day, I decided to ‘log off’ for real — I took a weekend trip without my laptop and came back with a plan: fixed hours, no notifications after 8 PM, and morning walks before checking emails. It changed everything. Remote work can be freeing, but only if you set boundaries. Don’t let your home turn into a 24/7 office. Your mental health matters more than deadlines. 🌿",
+    postStatus: "approved",
+    totalLikes: [
+      "66fc9b2d4e5f1a37a1000003",
+      "66fc9b2d4e5f1a37a1000004"
+    ],
+    totalHaha: [],
+    totalLove: [
+      "66fc9b2d4e5f1a37a1000002",
+      "66fc9b2d4e5f1a37a1000001"
+    ],
+    postDate: "2025-10-24T12:30:00.000Z",
+    comments: [
+      {
+        commenterId: "66fc9b2d4e5f1a37a1000004",
+        role: "Candidate",
+        commenterName: "Rafiul Hasan",
+        commenterEmail: "rafiul.jobseeker@gmail.com",
+        commentText: "This is so relatable. I used to check Slack even during dinner. I’m setting boundaries now!",
+        commentDate: "2025-10-24T12:40:00.000Z",
+        totalLikes: ["66fc9b2d4e5f1a37a1000005"],
+        totalHaha: [],
+        totalLove: []
+      },
+      {
+        commenterId: "66fc9b2d4e5f1a37a1000001",
+        role: "Employer",
+        commenterName: "Imran Hossain",
+        commenterEmail: "imran@softgen.io",
+        commentText: "As a team lead, I’ve seen how burnout creeps in silently. Thank you for raising awareness — boundaries are productivity boosters, not barriers.",
+        commentDate: "2025-10-24T12:50:00.000Z",
+        totalLikes: ["66fc9b2d4e5f1a37a1000003"],
+        totalHaha: [],
+        totalLove: ["66fc9b2d4e5f1a37a1000004"]
+      }
+    ]
   },
-  {
-    "username": "nabila_akter",
-    "email": "nabila.akter@example.com",
-    "postTitle": "Dealing with Imposter Syndrome in Tech",
-    "post": "I recently joined a new company as a frontend developer, and I constantly feel like I don’t belong. Everyone around me seems so smart. How do you guys deal with imposter syndrome?",
-    "totalLikes": 98,
-    "totalHaha": 3,
-    "totalLove": 65
-  },
-  {
-    "username": "rajib_sarker",
-    "email": "rajib.sarker@example.com",
-    "postTitle": "Remote work burnout is real!",
-    "post": "I thought working from home would be relaxing, but now I find it harder to separate work and rest. How do you maintain balance while working remotely?",
-    "totalLikes": 54,
-    "totalHaha": 12,
-    "totalLove": 40
-  },
-  {
-    "username": "mehnaz_rahman",
-    "email": "mehnaz.rahman@example.com",
-    "postTitle": "Advice on writing a strong LinkedIn profile",
-    "post": "I'm trying to make my LinkedIn profile stand out for recruiters. What are some must-have elements for a professional and eye-catching LinkedIn profile?",
-    "totalLikes": 64,
-    "totalHaha": 2,
-    "totalLove": 48
-  },
-  {
-    "username": "farhan_kabir",
-    "email": "farhan.kabir@example.com",
-    "postTitle": "Is React Native still relevant in 2025?",
-    "post": "I’ve been hearing about Flutter gaining traction. For cross-platform app development, should I stick with React Native or switch to Flutter?",
-    "totalLikes": 82,
-    "totalHaha": 10,
-    "totalLove": 56
-  },
-  {
-    "username": "sumaiya_jahan",
-    "email": "sumaiya.jahan@example.com",
-    "postTitle": "How to prepare for software engineering interviews?",
-    "post": "I'm graduating soon and starting to prepare for my first technical interviews. Any tips for balancing DSA practice and real-world project knowledge?",
-    "totalLikes": 150,
-    "totalHaha": 15,
-    "totalLove": 92
-  },
-  {
-    "username": "tahmid_rahim",
-    "email": "tahmid.rahim@example.com",
-    "postTitle": "Dark mode or light mode for UI design?",
-    "post": "While designing my new dashboard project, I’m confused between light and dark theme. Which one do users generally prefer and why?",
-    "totalLikes": 37,
-    "totalHaha": 18,
-    "totalLove": 21
-  },
-  {
-    "username": "ruma_akter",
-    "email": "ruma.akter@example.com",
-    "postTitle": "Networking tips for introverts?",
-    "post": "I’m not great at talking to strangers, especially at professional events. How can introverts effectively build a good professional network?",
-    "totalLikes": 89,
-    "totalHaha": 9,
-    "totalLove": 77
-  },
-  {
-    "username": "shafin_chowdhury",
-    "email": "shafin.chowdhury@example.com",
-    "postTitle": "What's your biggest career mistake and what did you learn?",
-    "post": "Let’s be honest — we’ve all made career mistakes that taught us something important. Mine was staying in my comfort zone too long. What’s yours?",
-    "totalLikes": 122,
-    "totalHaha": 22,
-    "totalLove": 94
-  }
+{
+  userId: "66fc9b2d4e5f1a37a1000004",
+  role: "Candidate",
+  firstName: "Samiul",
+  lastName: "Kabir",
+  email: "samiul.dev@gmail.com",
+  postTitle: "Office Politics — What I Learned by Staying Neutral",
+  postImage: "https://i.ibb.co/BqCBPwP/office-politics.jpg",
+  post: "In my first corporate job, I was shocked by how subtle office politics can be. People forming cliques, gossiping about promotions, or taking credit for others’ work — it was exhausting. At first, I tried to fit in, but that only drained my energy. Eventually, I realized that the best strategy is neutrality. I focused on my tasks, kept communication transparent, and avoided gossip. Over time, even the so-called ‘difficult’ colleagues started respecting me for my professionalism. Office politics will always exist, but your integrity is your shield. Be kind, but stay grounded — that’s the real power move. 💼",
+  postStatus: "approved",
+  totalLikes: [
+    "66fc9b2d4e5f1a37a1000001",
+    "66fc9b2d4e5f1a37a1000003"
+  ],
+  totalHaha: [],
+  totalLove: [
+    "66fc9b2d4e5f1a37a1000002"
+  ],
+  postDate: "2025-10-22T14:00:00.000Z",
+  comments: [
+    {
+      commenterId: "66fc9b2d4e5f1a37a1000005",
+      role: "Candidate",
+      commenterName: "Farhana Tuli",
+      commenterEmail: "farhana.designs@gmail.com",
+      commentText: "Completely agree! Staying neutral saved me from so much unnecessary stress at my previous job.",
+      commentDate: "2025-10-22T14:15:00.000Z",
+      totalLikes: ["66fc9b2d4e5f1a37a1000003"],
+      totalHaha: [],
+      totalLove: []
+    },
+    {
+      commenterId: "66fc9b2d4e5f1a37a1000001",
+      role: "Employer",
+      commenterName: "Imran Hossain",
+      commenterEmail: "imran@softgen.io",
+      commentText: "This is gold. As a manager, I’ve seen how neutrality builds long-term trust more than office politics ever can.",
+      commentDate: "2025-10-22T14:20:00.000Z",
+      totalLikes: ["66fc9b2d4e5f1a37a1000004"],
+      totalHaha: [],
+      totalLove: ["66fc9b2d4e5f1a37a1000002"]
+    }
+  ]
+}
+
+
 ]
+

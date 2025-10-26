@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 
         // Fetch candidates with pagination
         const candidates = await Candidate.find()
-            .populate('appliedJobs', 'jobTitle')
+            .populate('appliedJobs.job', 'jobTitle companyName')
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 }); // Sort by newest first 
@@ -66,7 +66,7 @@ router.get('/by-job/:jobId', verifyToken, async (req, res) => {
 
         const candidates = await Candidate.find(filter)
             .populate('appliedJobs.job', 'jobTitle companyName')
-            .select('name email phone appliedJobs');
+            .select('firstName lastName email phone appliedJobs');
 
         if (!candidates.length) {
             return res.status(404).json({ message: 'No candidates found for this job' });
@@ -82,7 +82,7 @@ router.get('/by-job/:jobId', verifyToken, async (req, res) => {
 // Get single Candidate
 router.get('/:id', verifyToken, async (req, res) => {
     try {
-        const candidate = await Candidate.findById(req.params.id).populate('appliedJobs', 'jobTitle');
+        const candidate = await Candidate.findById(req.params.id).populate('appliedJobs.job', 'jobTitle companyName');
         if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
         res.json(candidate);
     } catch (err) {
@@ -91,6 +91,62 @@ router.get('/:id', verifyToken, async (req, res) => {
 });
 
 
+//  GET Applied Jobs
+
+router.get("/:id/applied-jobs", async (req, res) => {
+    try {
+        const candidateId = req.params.id;
+
+        // Find candidate and populate appliedJobs.job to access job details
+        const candidate = await Candidate.findById(candidateId)
+            .populate("appliedJobs.job", "jobTitle companyName");
+
+        if (!candidate) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
+
+        // Build the response list
+        const appliedJobs = candidate.appliedJobs.map((applied) => ({
+            jobId: applied.job?._id,
+            jobTitle: applied.job?.jobTitle,
+            companyName: applied.job?.companyName,
+            status: applied.status,
+            primaryEnquiries: applied.primaryEnquiries || [],
+        }));
+
+        res.json(appliedJobs);
+    } catch (error) {
+        console.error("Error fetching applied jobs:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+
+//  GET Saved Jobs
+
+router.get("/:id/saved-jobs", async (req, res) => {
+    try {
+        const candidateId = req.params.id;
+
+        const candidate = await Candidate.findById(candidateId)
+            .populate("savedJobs", "jobTitle companyName");
+
+        if (!candidate) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
+
+        const savedJobs = candidate.savedJobs.map((job) => ({
+            jobId: job._id,
+            jobTitle: job.jobTitle,
+            companyName: job.companyName,
+        }));
+
+        res.json(savedJobs);
+    } catch (error) {
+        console.error("Error fetching saved jobs:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 
 
 // Create candidate
@@ -98,7 +154,7 @@ router.post('/', async (req, res) => {
     const existing = await Candidate.findOne({ email: req.body.email });
     if (existing) return res.status(400).json({ message: 'Email already exists' });
     // Check if email exists in Employer collection
-    const existingEmployer = await Employer.findOne({ email });
+    const existingEmployer = await Employer.findOne({ email: req.body.email });
     if (existingEmployer) {
         return res.status(400).json({ message: "Email already registered as Employer" });
     }
