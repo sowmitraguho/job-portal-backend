@@ -129,53 +129,111 @@ export const logoutUser = (req, res) => {
 
 
 
+// export const googleAuth = async (req, res) => {
+//   try {
+//     const { token, role } = req.body; // token from frontend + role (e.g. 'candidate' or 'employer')
+
+//     // Verify Google token
+//     const ticket = await client.verifyIdToken({
+//       idToken: token,
+//       audience: process.env.GOOGLE_CLIENT_ID,
+//     });
+
+//     const payload = ticket.getPayload();
+//     const { email, name, picture } = payload;
+//     const [firstName, ...rest] = name.split(' ');
+//     const lastName = rest.join(' ');
+//     // Check if user exists in either model
+//     let user =
+//       (await Employer.findOne({ email })) ||
+//       (await Candidate.findOne({ email }));
+
+//     // Create new user if not exists
+//     if (!user) {
+//       if (role === "employer") {
+//         user = new Employer({
+//           firstName, lastName,
+//           email,
+//           profileImage: picture,
+//           googleLogin: true,
+//         });
+//       } else {
+//         user = new Candidate({
+//           firstName, lastName,
+//           email,
+//           profileImage: picture,
+//           googleLogin: true,
+//         });
+//       }
+//       await user.save();
+//     }
+
+//     // Generate your own JWT
+//     const jwtToken = jwt.sign(
+//       { id: user._id, role: user.role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "7d" }
+//     );
+
+//     // Set cookie
+//     res.cookie("authToken", jwtToken, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+//       maxAge: 7 * 24 * 60 * 60 * 1000,
+//       path: "/",
+//     });
+
+//     const userObj = user.toObject();
+//     delete userObj.password;
+
+//     res.status(200).json({
+//       message: "Google login successful",
+//       user: userObj,
+//       token: jwtToken,
+//     });
+//   } catch (err) {
+//     console.error("Google login error:", err);
+//     res.status(400).json({ message: "Google authentication failed" });
+//   }
+// };
+
+
 export const googleAuth = async (req, res) => {
   try {
-    const { token, role } = req.body; // token from frontend + role (e.g. 'candidate' or 'employer')
+    const { firstName, lastName, email, profileImage, role } = req.body;
 
-    // Verify Google token
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    const { email, name, picture } = payload;
-    const [firstName, ...rest] = name.split(' ');
-    const lastName = rest.join(' ');
-    // Check if user exists in either model
     let user =
       (await Employer.findOne({ email })) ||
       (await Candidate.findOne({ email }));
 
-    // Create new user if not exists
     if (!user) {
       if (role === "employer") {
         user = new Employer({
-          firstName, lastName,
+          firstName,
+          lastName,
           email,
-          profileImage: picture,
+          profileImage,
           googleLogin: true,
         });
       } else {
         user = new Candidate({
-          firstName, lastName,
+          firstName,
+          lastName,
           email,
-          profileImage: picture,
+          profileImage,
           googleLogin: true,
         });
       }
       await user.save();
     }
 
-    // Generate your own JWT
     const jwtToken = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id, role: role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    // Set cookie
     res.cookie("authToken", jwtToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -184,12 +242,9 @@ export const googleAuth = async (req, res) => {
       path: "/",
     });
 
-    const userObj = user.toObject();
-    delete userObj.password;
-
     res.status(200).json({
       message: "Google login successful",
-      user: userObj,
+      user,
       token: jwtToken,
     });
   } catch (err) {
@@ -197,5 +252,3 @@ export const googleAuth = async (req, res) => {
     res.status(400).json({ message: "Google authentication failed" });
   }
 };
-
-
