@@ -120,8 +120,8 @@ export const checkLoginStatus = async (req, res) => {
 export const logoutUser = (req, res) => {
   res.clearCookie('authToken', {
     httpOnly: true,
-    secure: true,       // true in production (HTTPS)
-    sameSite: 'None',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   res.status(200).json({ message: 'Logged out successfully' });
 };
