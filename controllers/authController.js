@@ -103,10 +103,27 @@ export const checkLoginStatus = async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { id, role } = decoded;
+
+    let user;
+
+    switch (role) {
+      case "candidate":
+        user = await Candidate.findById(id).select("-password");
+        break;
+      case "employer":
+        user = await Employer.findById(id).select("-password");
+        break;
+      // case "admin":
+      //   user = await Admin.findById(id).select("-password");
+      //   break;
+      default:
+        return res.status(200).json({ loggedIn: false, message: "Invalid role" });
+    }
 
     res.status(200).json({
       loggedIn: true,
-      user: decoded,
+      user: user,
     });
   } catch (err) {
     res.status(401).json({
@@ -120,8 +137,8 @@ export const checkLoginStatus = async (req, res) => {
 export const logoutUser = (req, res) => {
   res.clearCookie('authToken', {
     httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   res.status(200).json({ message: 'Logged out successfully' });
 };
