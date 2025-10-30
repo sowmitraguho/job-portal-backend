@@ -39,7 +39,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create employer
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, async (req, res) => {
     // Check if email already exists in Candidate collection
     const existingCandidate = await Candidate.findOne({ email: req.body.email });
     if (existingCandidate) {
@@ -67,7 +67,7 @@ router.post('/', async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             path: "/",
         });
-        res.status(201).json({ user: newEmployer });
+        res.status(201).json({ user: newAdmin, token });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
