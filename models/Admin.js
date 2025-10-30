@@ -36,7 +36,7 @@ const adminSchema = new mongoose.Schema(
         phone: {
             type: String,
         },
-        
+
         createdAt: { type: Date, default: Date.now },
     },
     { timestamps: true }

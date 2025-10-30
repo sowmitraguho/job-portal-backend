@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import jobRoutes from './routes/jobs.js';
 import employerRoutes from './routes/employers.js';
 import candidateRoutes from './routes/candidates.js';
+import adminRoutes from './routes/admin.js';
 import subscribeRoutes from './routes/subscribe.js';
 import reviewRoutes from './routes/review.js';
 import comminuty from './routes/community.js'
@@ -39,6 +40,7 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/jobs', jobRoutes);
 app.use('/api/employers', employerRoutes);
 app.use('/api/candidates', candidateRoutes);
+app.use('/api/admins', adminRoutes);
 app.use('/api/subscribe', subscribeRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/community', comminuty);
