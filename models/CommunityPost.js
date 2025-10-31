@@ -8,11 +8,9 @@ const commentSchema = new mongoose.Schema(
   {
     commenterId: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: 'comments.role', // dynamically reference Employer or Candidate
     },
     role: {
       type: String,
-      enum: ['Employer', 'Candidate'],
     },
     commenterName: { type: String, },
     commenterEmail: { type: String, },
@@ -23,19 +21,16 @@ const commentSchema = new mongoose.Schema(
     totalLikes: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'comments.role', // dynamic reference
       },
     ],
     totalHaha: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'comments.role',
       },
     ],
     totalLove: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'comments.role',
       },
     ],
   },
@@ -53,7 +48,6 @@ const communityPostSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['Employer', 'Candidate'],
     },
     firstName: { type: String },
     lastName: { type: String },
@@ -66,19 +60,16 @@ const communityPostSchema = new mongoose.Schema(
     totalLikes: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'role',
       },
     ],
     totalHaha: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'role',
       },
     ],
     totalLove: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'role',
       },
     ],
 

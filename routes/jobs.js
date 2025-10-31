@@ -1,6 +1,6 @@
 import express from 'express';
 import Job from '../models/Job.js';
-import Employee from '../models/candidate.js';
+import Candidate from '../models/candidate.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import { postJob } from '../controllers/jobController.js';
 
@@ -51,6 +51,20 @@ router.get('/:id', async (req, res) => {
     const job = await Job.findById(req.params.id).populate('employer', 'name companyName email');
     if (!job) return res.status(404).json({ message: 'Job not found' });
     res.json(job);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /candidates?ids=cand1,cand2,cand3
+router.get('/applied', verifyToken, async (req, res) => {
+  const { ids } = req.query;
+  if (!ids) return res.status(400).json({ message: 'No ids provided' });
+
+  const idArray = (ids).split(',');
+  try {
+    const candidates = await Candidate.find({ _id: { $in: idArray } });
+    res.json({ candidates });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

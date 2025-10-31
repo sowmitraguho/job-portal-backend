@@ -16,6 +16,7 @@ router.get('/', async (req, res) => {
 
         // Fetch candidates with pagination
         const candidates = await Candidate.find()
+            .select('-password')
             .populate('appliedJobs.job', 'jobTitle companyName')
             .skip(skip)
             .limit(limit)
@@ -38,19 +39,46 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET /candidates?ids=cand1,cand2,cand3
-router.get('/applied', verifyToken, async (req, res) => {
-    const { ids } = req.query;
-    if (!ids) return res.status(400).json({ message: 'No ids provided' });
-
-    const idArray = (ids).split(',');
+// GET /candidate/applied-jobs
+router.get('/applied-jobs', verifyToken, async (req, res) => {
     try {
-        const candidates = await Candidate.find({ _id: { $in: idArray } });
-        res.json({ candidates });
+        const candidate = await Candidate.findById(req.user.id)
+            .select('appliedJobs') // only appliedJobs field
+            .populate({
+                path: 'appliedJobs.job',      // populate the job field inside appliedJobs
+                select: 'jobTitle companyName location salary description requirements', // fields to include
+            });
+
+        if (!candidate) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
+
+        res.json({ appliedJobs: candidate.appliedJobs });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
+// GET /candidate/saved-jobs
+router.get('/saved-jobs', verifyToken, async (req, res) => {
+    try {
+        const candidate = await Candidate.findById(req.user.id)
+            .select('savedJobs') // only savedJobs field
+            .populate({
+                path: 'savedJobs',            // savedJobs is an array of Job IDs
+                select: 'jobTitle companyName location salary description requirements', // fields to include
+            });
+
+        if (!candidate) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
+
+        res.json({ savedJobs: candidate.savedJobs });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 
 //get by applied job info
 router.get('/by-job/:jobId', verifyToken, async (req, res) => {
@@ -81,7 +109,7 @@ router.get('/by-job/:jobId', verifyToken, async (req, res) => {
 
 
 // Get single Candidate
-router.get('/:id', verifyToken, async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id).populate('appliedJobs.job', 'jobTitle companyName');
         if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
@@ -175,38 +203,148 @@ router.post('/', async (req, res) => {
     try {
         const newCandidate = await candidate.save();
         const token = jwt.sign(
-              { id: newCandidate._id, role: newCandidate.role },
-              process.env.JWT_SECRET,
-              { expiresIn: '7d' }
-            );
-            //  Set cookie
-            res.cookie('authToken', token, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === "production",
-              sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-              path: "/",
-            });
+            { id: newCandidate._id, role: newCandidate.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+        //  Set cookie
+        res.cookie('authToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            path: "/",
+        });
         res.status(201).json({ user: newCandidate, token });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
 });
 
-// Update Candidate
-router.put('/:id', verifyToken, async (req, res) => {
+
+
+// UPDATE candidate but DO NOT allow: appliedJobs, savedJobs, role
+router.put("/candidate/:id", async (req, res) => {
     try {
-        const { job, status, primaryEnquiries } = req.body;
-        const candidate = await Candidate.findByIdAndUpdate(
+        const forbiddenFields = ["appliedJobs", "savedJobs", "role"];
+
+        // Remove forbidden fields from req.body if sent
+        forbiddenFields.forEach((field) => {
+            if (req.body[field]) {
+                delete req.body[field];
+            }
+        });
+
+        const updatedCandidate = await Candidate.findByIdAndUpdate(
             req.params.id,
-            { $push: { appliedJobs: { job, status, primaryEnquiries } } },
+            { $set: req.body },
             { new: true }
         );
-        res.json(candidate);
+
+        if (!updatedCandidate) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
+
+        res.json({
+            message: "Candidate updated successfully",
+            candidate: updatedCandidate,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+// Update Candidate job application (prevent duplicates)
+router.put('/:id/apply', verifyToken, async (req, res) => {
+    try {
+        const { job, status, primaryEnquiries } = req.body;
+
+        if (!job) {
+            return res.status(400).json({ message: "job field is required" });
+        }
+
+        // ✅ Fetch candidate first
+        const candidate = await Candidate.findById(req.params.id);
+
+        if (!candidate) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
+
+        // ✅ Check if job is already applied
+        const alreadyApplied = candidate.appliedJobs.some(
+            (item) => item.job.toString() === job
+        );
+
+        if (alreadyApplied) {
+            return res.status(400).json({ message: "Job already applied" });
+        }
+
+        // ✅ Add new application
+        candidate.appliedJobs.push({
+            job,
+            status: status || 'applied',
+            primaryEnquiries: primaryEnquiries || []
+        });
+
+        await candidate.save();
+
+        res.json({
+            message: "Job applied successfully",
+            appliedJobs: candidate.appliedJobs
+        });
+
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
 });
+
+
+// ✅ Update savedJobs (add/remove) with duplicate check
+router.put("/:id/savedjobs", async (req, res) => {
+    try {
+        const { jobId, action } = req.body;
+
+        if (!jobId || !action) {
+            return res.status(400).json({ message: "jobId and action are required" });
+        }
+
+        const candidate = await Candidate.findById(req.params.id);
+
+        if (!candidate) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
+
+        // ✅ Check for duplicates when adding
+        if (action === "add") {
+            if (candidate.savedJobs.includes(jobId)) {
+                return res.status(400).json({ message: "Job already added" });
+            }
+
+            candidate.savedJobs.push(jobId);
+            await candidate.save();
+
+            return res.json({ message: "Job saved successfully", savedJobs: candidate.savedJobs });
+        }
+
+        // ✅ Handle remove
+        else if (action === "remove") {
+            candidate.savedJobs = candidate.savedJobs.filter(
+                (saved) => saved.toString() !== jobId
+            );
+            await candidate.save();
+
+            return res.json({ message: "Job removed successfully", savedJobs: candidate.savedJobs });
+        }
+
+        else {
+            return res.status(400).json({ message: "Invalid action. Use add/remove." });
+        }
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
 
 
 // Delete Candidate
