@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const reviewSchema = new mongoose.Schema(
     {
         userId: { type: mongoose.Schema.Types.ObjectId, required: true }, // can be Candidate or Employer
-        role: { type: String, enum: ['Candidate', 'Employer'] }, // specify the role
+        role: { type: String, enum: ['candidate', 'employer'] }, // specify the role
         firstName: { type: String },
         lastName: { type: String },
         userName: { type: String },

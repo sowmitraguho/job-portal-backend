@@ -136,7 +136,7 @@ router.get('/:id/applicants', verifyToken, async (req, res) => {
     const jobs = await Job.find(jobFilter)
       .populate({
         path: 'applicants',
-        select: 'name email skills profileImage resume experience education appliedJobs createdAt applicationStatus',
+        select: 'firstName lastName email skills profileImage resume experience education appliedJobs createdAt applicationStatus',
       })
       .exec();
 
