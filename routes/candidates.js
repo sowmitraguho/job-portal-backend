@@ -224,7 +224,7 @@ router.post('/', async (req, res) => {
 
 
 // UPDATE candidate but DO NOT allow: appliedJobs, savedJobs, role
-router.put("/candidate/:id", async (req, res) => {
+router.put("/:id", verifyToken, async (req, res) => {
     try {
         const forbiddenFields = ["appliedJobs", "savedJobs", "role"];
 

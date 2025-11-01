@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
 
     // Fetch filtered + paginated jobs
     const jobs = await Job.find(filter)
-      .populate('employer', 'name companyName email')
+      .populate('employer', 'firstName lastName companyName email')
       .skip(skip)
       .limit(limit)
       .sort({ postedAt: -1 });
@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
 // Get single job
 router.get('/:id', async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id).populate('employer', 'name companyName email');
+    const job = await Job.findById(req.params.id).populate('employer', 'firstName lastName companyName email');
     if (!job) return res.status(404).json({ message: 'Job not found' });
     res.json(job);
   } catch (err) {
@@ -140,31 +140,31 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
 // Apply for job
 router.post('/:id/apply', verifyToken, async (req, res) => {
-  const { employeeId } = req.body; // ID of logged-in employee
+  const { candidateId } = req.body; // ID of logged-in candidate
   const { id } = req.params; // job ID
 
   try {
     const job = await Job.findById(id);
-    const employee = await Employee.findById(employeeId);
+    const candidate = await Candidate.findById(candidateId);
 
-    if (!job || !employee) {
-      return res.status(404).json({ message: 'Job or Employee not found' });
+    if (!job || !candidate) {
+      return res.status(404).json({ message: 'Job or Candidate not found' });
     }
 
     // Avoid duplicate applications
     const alreadyApplied = job.applicants.some(
-      (a) => a.applicant.toString() === employeeId
+      (a) => a.applicant.toString() === candidateId
     );
     if (alreadyApplied) {
       return res.status(400).json({ message: 'Already applied' });
     }
 
     // Push applicant with structure
-    job.applicants.push({ applicant: employeeId, status: 'applied' });
-    employee.appliedJobs.push(id);
+    job.applicants.push({ applicant: candidateId, status: 'applied' });
+    candidate.appliedJobs.push(id);
 
     await job.save();
-    await employee.save();
+    await candidate.save();
 
     res.status(200).json({ message: 'Application successful' });
   } catch (err) {

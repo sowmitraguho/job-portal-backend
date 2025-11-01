@@ -13,7 +13,7 @@ const employerSchema = new mongoose.Schema(
     },
     authProvider: {
       type: String,
-      enum: ['google', 'Email/Password', 'github'],
+      enum: ['google', 'Email/Password'],
       default: 'Email/Password'
     },
     email: {

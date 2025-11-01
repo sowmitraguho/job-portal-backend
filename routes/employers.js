@@ -37,6 +37,28 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
+// GET /employer/:id/jobs
+router.get('/:id/jobs', verifyToken, async (req, res) => {
+  const { id } = req.params; // employer ID
+
+  try {
+    const jobs = await Job.find({ employer: id })
+      .populate('employer', 'companyName email profileImage') // optional: include employer info
+      .sort({ createdAt: -1 }); // newest first
+
+    if (!jobs.length) {
+      return res.status(404).json({ message: 'No jobs found for this employer' });
+    }
+
+    res.json({ jobs });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
 // Create employer
 router.post('/', async (req, res) => {
   // Check if email already exists in Candidate collection
@@ -54,18 +76,18 @@ router.post('/', async (req, res) => {
   try {
     const newEmployer = await employer.save();
     const token = jwt.sign(
-          { id: newEmployer._id, role: newEmployer.role },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-        );
-        //  Set cookie
-        res.cookie('authToken', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-          path: "/",
-        });
+      { id: newEmployer._id, role: newEmployer.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    //  Set cookie
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
+    });
     res.status(201).json({ user: newEmployer });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -83,7 +105,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 });
 
 // Delete employer
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     await Employer.findByIdAndDelete(req.params.id);
     await Job.deleteMany({ employer: req.params.id });

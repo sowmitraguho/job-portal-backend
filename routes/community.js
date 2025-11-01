@@ -262,4 +262,47 @@ router.patch('/:id/react', verifyToken, async (req, res) => {
   }
 });
 
+/* -------------------------------------------
+   REACT TO COMMENTS (like/love/haha toggle)
+------------------------------------------- */
+router.patch('/:postId/comments/:commentId/react', verifyToken, async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const { type } = req.body; // "like", "love", or "haha"
+    const userId = req.user.id;
+
+    // Find the post
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    // Find the comment inside post
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+    // Remove user from all reaction arrays first
+    ['totalLikes', 'totalHaha', 'totalLove'].forEach((field) => {
+      comment[field] = comment[field].filter(id => id.toString() !== userId);
+    });
+
+    // Map type to field
+    const fieldMap = {
+      like: 'totalLikes',
+      haha: 'totalHaha',
+      love: 'totalLove'
+    };
+
+    // Add user to selected reaction type
+    if (fieldMap[type]) comment[fieldMap[type]].push(userId);
+
+    await post.save();
+
+    res.json({
+      message: `Reaction updated (${type}) for comment`,
+      comment,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 export default router;
