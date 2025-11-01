@@ -1,5 +1,6 @@
 import express from 'express';
 import Candidate from '../models/candidate.js';
+import Job from '../models/Job.js';
 import bcrypt from "bcryptjs";
 import { verifyToken } from '../middleware/authMiddleware.js';
 import Employer from '../models/Employer.js';
@@ -254,46 +255,111 @@ router.put("/:id", verifyToken, async (req, res) => {
     }
 });
 // Update Candidate job application (prevent duplicates)
-router.put('/:id/apply', verifyToken, async (req, res) => {
+// router.put('/:id/apply', verifyToken, async (req, res) => {
+//     try {
+//         const { job, status, primaryEnquiries } = req.body;
+
+//         if (!job) {
+//             return res.status(400).json({ message: "job field is required" });
+//         }
+
+//         // ✅ Fetch candidate first
+//         const candidate = await Candidate.findById(req.params.id);
+
+//         if (!candidate) {
+//             return res.status(404).json({ message: "Candidate not found" });
+//         }
+
+//         // ✅ Check if job is already applied
+//         const alreadyApplied = candidate.appliedJobs.some(
+//             (item) => item.job.toString() === job
+//         );
+
+//         if (alreadyApplied) {
+//             return res.status(400).json({ message: "Job already applied" });
+//         }
+
+//         // ✅ Add new application
+//         candidate.appliedJobs.push({
+//             job,
+//             status: status || 'applied',
+//             primaryEnquiries: primaryEnquiries || []
+//         });
+
+//         await candidate.save();
+
+//         res.json({
+//             message: "Job applied successfully",
+//             appliedJobs: candidate.appliedJobs
+//         });
+
+//     } catch (err) {
+//         res.status(400).json({ message: err.message });
+//     }
+// });
+router.post("/:candidateId/apply/:jobId", verifyToken, async (req, res) => {
+    const { candidateId, jobId } = req.params;
+    const { status, primaryEnquiries } = req.body;
+
     try {
-        const { job, status, primaryEnquiries } = req.body;
+        // ✅ Fetch job & candidate
+        const job = await Job.findById(jobId);
+        const candidate = await Candidate.findById(candidateId);
 
-        if (!job) {
-            return res.status(400).json({ message: "job field is required" });
+        if (!job || !candidate) {
+            return res.status(404).json({ message: "Job or Candidate not found" });
         }
 
-        // ✅ Fetch candidate first
-        const candidate = await Candidate.findById(req.params.id);
-
-        if (!candidate) {
-            return res.status(404).json({ message: "Candidate not found" });
-        }
-
-        // ✅ Check if job is already applied
-        const alreadyApplied = candidate.appliedJobs.some(
-            (item) => item.job.toString() === job
+        /* ------------------------------------------
+           CHECK DUPLICATE ON JOB SIDE
+        ---------------------------------------------*/
+        const jobAlreadyApplied = job.applicants.some(
+            (a) => a.applicant.toString() === candidateId
         );
 
-        if (alreadyApplied) {
-            return res.status(400).json({ message: "Job already applied" });
+        if (jobAlreadyApplied) {
+            return res.status(400).json({ message: "Already applied to this job" });
         }
 
-        // ✅ Add new application
+        /* ------------------------------------------
+           CHECK DUPLICATE ON CANDIDATE SIDE
+        ---------------------------------------------*/
+        const candidateAlreadyApplied = candidate.appliedJobs.some(
+            (j) => j.job.toString() === jobId
+        );
+
+        if (candidateAlreadyApplied) {
+            return res.status(400).json({ message: "Job already exists in applied list" });
+        }
+
+        /* ------------------------------------------
+           ✅ Update JOB collection
+        ---------------------------------------------*/
+        job.applicants.push({
+            applicant: candidateId,
+            status: "applied"
+        });
+
+        /* ------------------------------------------
+           ✅ Update CANDIDATE collection
+        ---------------------------------------------*/
         candidate.appliedJobs.push({
-            job,
-            status: status || 'applied',
+            job: jobId,
+            status: status || "applied",
             primaryEnquiries: primaryEnquiries || []
         });
 
+        await job.save();
         await candidate.save();
 
-        res.json({
-            message: "Job applied successfully",
-            appliedJobs: candidate.appliedJobs
+        res.status(200).json({
+            message: "Application successful",
+            jobApplicants: job.applicants,
+            candidateAppliedJobs: candidate.appliedJobs
         });
 
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
