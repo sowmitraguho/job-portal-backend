@@ -5,12 +5,15 @@ import mongoose from 'mongoose';
 import jobRoutes from './routes/jobs.js';
 import employerRoutes from './routes/employers.js';
 import candidateRoutes from './routes/candidates.js';
+import candidateResumeRoutes from './routes/candidateResumeRoutes.js';
 import adminRoutes from './routes/admin.js';
 import subscribeRoutes from './routes/subscribe.js';
 import reviewRoutes from './routes/review.js';
 import comminuty from './routes/community.js'
 import authRoutes from './routes/authRoutes.js'
 import dotenv from 'dotenv';
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
@@ -40,11 +43,19 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/jobs', jobRoutes);
 app.use('/api/employers', employerRoutes);
 app.use('/api/candidates', candidateRoutes);
+app.use('/api/candidates/resume', candidateResumeRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/subscribe', subscribeRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/community', comminuty);
 app.use('/api/auth', authRoutes);
+
+// ✅ Construct __dirname in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// Serve resumes as static files
+app.use("/api/resumes", express.static(path.join(__dirname, "uploads/resumes")));
+
 
 app.get('/', (req, res) => {
   res.send('Job Portal API is running');
