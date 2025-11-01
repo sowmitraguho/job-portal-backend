@@ -123,7 +123,7 @@ router.get('/:id', async (req, res) => {
 
 //  GET Applied Jobs
 
-router.get("/:id/applied-jobs", async (req, res) => {
+router.get("/:id/applied-jobs", verifyToken, async (req, res) => {
     try {
         const candidateId = req.params.id;
 
@@ -154,7 +154,7 @@ router.get("/:id/applied-jobs", async (req, res) => {
 
 //  GET Saved Jobs
 
-router.get("/:id/saved-jobs", async (req, res) => {
+router.get("/:id/saved-jobs", verifyToken, async (req, res) => {
     try {
         const candidateId = req.params.id;
 

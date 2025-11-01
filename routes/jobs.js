@@ -70,16 +70,8 @@ router.get('/applied', verifyToken, async (req, res) => {
   }
 });
 
-// Create job
-// router.post('/', async (req, res) => {
-//   const job = new Job(req.body);
-//   try {
-//     const newJob = await job.save();
-//     res.status(201).json(newJob);
-//   } catch (err) {
-//     res.status(400).json({ message: err.message });
-//   }
-// });
+// Post a new Job
+
 router.post("/", verifyToken, postJob);
 
 // Update job
