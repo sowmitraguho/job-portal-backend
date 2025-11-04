@@ -23,7 +23,7 @@ app.use(express.json());
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000", "https://job-quest-frontend-lemon.vercel.app", "https://job-quest-frontend-phi.vercel.app"],
+    origin: ["http://localhost:5173", "http://localhost:3000", "https://job-quest-frontend-lemon.vercel.app", "https://job-quest-frontend-phi.vercel.app", "https://jonquest.vercel.app"],
     credentials: true,
   })
 );
