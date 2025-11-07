@@ -278,13 +278,30 @@ router.post('/:id/comments', verifyToken, async (req, res) => {
     const post = await CommunityPost.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
+    // const newComment = {
+    //   commenterId: req.user.id,
+    //   role: req.user.role.toLowerCase(),
+    //   commenterName: `${req.user.firstName} ${req.user.lastName}`,
+    //   commenterEmail: req.user.email,
+    //   commentText,
+    // };
+    let UserModel;
+
+    const role = req.user.role.toLowerCase();
+    if (role === "employer") UserModel = mongoose.model("Employer");
+    if (role === "candidate") UserModel = mongoose.model("Candidate");
+    if (role === "admin") UserModel = mongoose.model("Admin");
+
+    const userData = await UserModel.findById(req.user.id).lean();
+
     const newComment = {
       commenterId: req.user.id,
       role: req.user.role.toLowerCase(),
-      commenterName: `${req.user.firstName} ${req.user.lastName}`,
-      commenterEmail: req.user.email,
+      commenterName: `${userData.firstName} ${userData.lastName}`,
+      commenterEmail: userData.email,
       commentText,
     };
+
 
     post.comments.push(newComment);
     await post.save();
