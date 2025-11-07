@@ -78,8 +78,8 @@ router.get('/approved', async (req, res) => {
             let UserModel;
             if (comment.role === 'employer') {
               UserModel = mongoose.model('Employer');
-            } else if (comment.role === 'student') {
-              UserModel = mongoose.model('Student');
+            } else if (comment.role === 'candidate') {
+              UserModel = mongoose.model('Candidate');
             } else if (comment.role === 'admin') {
               UserModel = mongoose.model('Admin');
             } else {
