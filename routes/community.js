@@ -7,26 +7,112 @@ const router = express.Router();
 /* -------------------------------------------
    GET ALL POSTS (latest first)
 ------------------------------------------- */
+
 router.get('/', async (req, res) => {
   try {
     const posts = await CommunityPost.find().sort({ createdAt: -1 });
-    res.json(posts);
+
+    // ✅ Enhance each comment with user details using commenterId + role
+    const enhancedPosts = await Promise.all(
+      posts.map(async (post) => {
+        const commentsWithUser = await Promise.all(
+          post.comments.map(async (comment) => {
+            if (!comment.commenterId || !comment.role) return comment;
+
+            let UserModel;
+            if (comment.role === 'employer') {
+              UserModel = mongoose.model('Employer');
+            } else if (comment.role === 'candidate') {
+              UserModel = mongoose.model('Candidate');
+            } else if (comment.role === 'admin') {
+              UserModel = mongoose.model('Admin');
+            } else {
+              return comment;
+            }
+
+            const user = await UserModel.findById(comment.commenterId).lean();
+
+            return {
+              ...comment.toObject(),
+              commenterDetails: user ? {
+                name: user.firstName + " " + (user.lastName || ""),
+                email: user.email,
+                role: comment.role,
+                profileImage: user.profileImage || null
+              } : null
+            };
+          })
+        );
+
+        return {
+          ...post.toObject(),
+          comments: commentsWithUser
+        };
+      })
+    );
+
+    res.json(enhancedPosts);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
+
 /* -------------------------------------------
    GET APPROVED POSTS ONLY
 ------------------------------------------- */
+
+
 router.get('/approved', async (req, res) => {
   try {
-    const posts = await CommunityPost.find({ postStatus: 'approved' }).sort({ createdAt: -1 });
-    res.json(posts);
+    const posts = await CommunityPost.find({ postStatus: 'approved' })
+      .sort({ createdAt: -1 });
+
+    const enhancedPosts = await Promise.all(
+      posts.map(async (post) => {
+        const commentsWithUser = await Promise.all(
+          post.comments.map(async (comment) => {
+            if (!comment.commenterId || !comment.role) return comment;
+
+            let UserModel;
+            if (comment.role === 'employer') {
+              UserModel = mongoose.model('Employer');
+            } else if (comment.role === 'student') {
+              UserModel = mongoose.model('Student');
+            } else if (comment.role === 'admin') {
+              UserModel = mongoose.model('Admin');
+            } else {
+              return comment;
+            }
+
+            const user = await UserModel.findById(comment.commenterId).lean();
+
+            return {
+              ...comment.toObject(),
+              commenterDetails: user ? {
+                name: user.firstName + " " + (user.lastName || ""),
+                email: user.email,
+                role: comment.role,
+                profileImage: user.profileImage || null
+              } : null
+            };
+          })
+        );
+
+        return {
+          ...post.toObject(),
+          comments: commentsWithUser
+        };
+      })
+    );
+
+    res.json(enhancedPosts);
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 /* -------------------------------------------
    GET SINGLE POST BY ID
@@ -193,7 +279,7 @@ router.post('/:id/comments', verifyToken, async (req, res) => {
 
     const newComment = {
       commenterId: req.user.id,
-      role: req.user.role,
+      role: req.user.role.toLowerCase(),
       commenterName: `${req.user.firstName} ${req.user.lastName}`,
       commenterEmail: req.user.email,
       commentText,
