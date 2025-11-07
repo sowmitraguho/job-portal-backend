@@ -1,6 +1,7 @@
 import express from 'express';
 import CommunityPost from '../models/CommunityPost.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
+import mongoose from "mongoose";
 
 const router = express.Router();
 
